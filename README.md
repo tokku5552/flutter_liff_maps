@@ -1,16 +1,47 @@
 # flutter_liff_maps
 
-A new Flutter project.
+## Feature
 
-## Getting Started
+- 自分の近くにある公園を探すことができる。
+- チェックインすることができる。
+- 公園ごとにチェックインした人が見える。
+- 友人がチェックインしたら通知が来る。
 
-This project is a starting point for a Flutter application.
+## UI
 
-A few resources to get you started if this is your first Flutter project:
+- 公園マップ画面
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## modeling
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- 公園
+  - geo
+    - hash
+    - geopoint
+      - latitude
+      - longitude
+  - 名前
+  - チェックイン[]
+- ユーザー
+  - 名前
+  - チェックイン[]
+- チェックイン
+  - 公園 id
+  - ユーザー id
+  - 日時
+
+## firestore
+
+- parks
+  - geo
+    - hash
+    - geopoint
+      - latitude
+      - longitude
+  - name
+- chekins
+  - userId
+  - parkId
+  - date
+- users
+  - lineId
+  - name
