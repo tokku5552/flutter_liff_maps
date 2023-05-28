@@ -8,9 +8,15 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  cupertino_icons: ^1.0.2
+  cloud_firestore: ^4.7.1
+  cupertino_icons: ^1.0.5
+  firebase_core: ^2.13.0
   flutter:
     sdk: flutter
+  geoflutterfire_plus: ^0.0.11
+  google_maps_flutter: ^2.2.8
+  google_maps_flutter_web: ^0.4.0+9
+  rxdart: ^0.27.7
 
 dev_dependencies:
   flutter_test:
