@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug (Chrome)",
+      "name": "Debug",
       "program": "lib/main.dart",
       "request": "launch",
       "type": "dart",
