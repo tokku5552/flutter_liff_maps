@@ -1,3 +1,5 @@
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_line_sdk/flutter_line_sdk.dart';
@@ -69,10 +71,19 @@ class _MyHomePageState extends State<MyHomePage> {
               onPressed: () async {
                 try {
                   final loginResult = await LineSDK.instance.login(
-                    scopes: ['profile'],
+                    scopes: ['profile', 'openid', 'email'],
                   );
                   final token = loginResult.accessToken.value;
-                  debugPrint(token);
+                  final callable =
+                      FirebaseFunctions.instanceFor(region: 'asia-northeast1')
+                          .httpsCallable('createFirebaseAuthCustomToken');
+                  final response = await callable.call<Map<String, dynamic>>(
+                    <String, dynamic>{'accessToken': token},
+                  );
+                  final customToken = response.data['customToken'] as String;
+                  final userCredential = await FirebaseAuth.instance
+                      .signInWithCustomToken(customToken);
+                  debugPrint(userCredential.user?.uid);
                 } on PlatformException catch (e) {
                   debugPrint(e.message);
                 }
