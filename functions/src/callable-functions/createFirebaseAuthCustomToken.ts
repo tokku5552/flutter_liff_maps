@@ -2,7 +2,7 @@ import * as admin from 'firebase-admin'
 import * as functions from 'firebase-functions'
 import axios from 'axios'
 
-const LINE_CHANNEL_ID = `YOUR-CHANNEL-ID-HERE`
+const LINE_CHANNEL_ID = `1656319899`
 
 /**
  * [Request]
