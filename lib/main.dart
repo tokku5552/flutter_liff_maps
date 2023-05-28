@@ -103,6 +103,7 @@ class _SignInButtonState extends State<_SignInButton> {
     setState(() {
       isLoading = true;
     });
+    final scaffoldMessengerState = ScaffoldMessenger.of(context);
     try {
       final loginResult = await LineSDK.instance.login(
         scopes: ['profile', 'openid', 'email'],
@@ -117,6 +118,8 @@ class _SignInButtonState extends State<_SignInButton> {
       final userCredential =
           await FirebaseAuth.instance.signInWithCustomToken(customToken);
       debugPrint(userCredential.user?.uid);
+      scaffoldMessengerState
+          .showSnackBar(const SnackBar(content: Text('サインインしました。')));
     } on PlatformException catch (e) {
       debugPrint(e.message);
     } finally {
@@ -133,7 +136,12 @@ class _SignOutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () => FirebaseAuth.instance.signOut(),
+      onPressed: () async {
+        final scaffoldMessengerState = ScaffoldMessenger.of(context);
+        await FirebaseAuth.instance.signOut();
+        scaffoldMessengerState
+            .showSnackBar(const SnackBar(content: Text('サインアウトしました。')));
+      },
       child: const Text('サインアウト'),
     );
   }
