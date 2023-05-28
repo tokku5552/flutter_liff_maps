@@ -21,15 +21,9 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for android - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -60,5 +54,23 @@ class DefaultFirebaseOptions {
     authDomain: 'maps-flutter-web-sample.firebaseapp.com',
     storageBucket: 'maps-flutter-web-sample.appspot.com',
     measurementId: 'G-W8Y0LJZXBX',
+  );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyD3vvPMYIqQAiqZw9rH8KxXcmMU73AFsP0',
+    appId: '1:926133512383:android:ae1a431a23bdc4eecd7e0a',
+    messagingSenderId: '926133512383',
+    projectId: 'maps-flutter-web-sample',
+    storageBucket: 'maps-flutter-web-sample.appspot.com',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyBYZU6Gw0viW07N_quxBRqRQeA57Z2n-zc',
+    appId: '1:926133512383:ios:b801d04f0e622a2fcd7e0a',
+    messagingSenderId: '926133512383',
+    projectId: 'maps-flutter-web-sample',
+    storageBucket: 'maps-flutter-web-sample.appspot.com',
+    iosClientId: '926133512383-r7pa67ej9r38b0gb0p3rv8pdvvqqg622.apps.googleusercontent.com',
+    iosBundleId: 'com.example.flutterLiffMaps',
   );
 }
