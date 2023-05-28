@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_line_sdk/flutter_line_sdk.dart';
 
-void main() {
+// FIXME: 仮で実行前に LINE Login Channel ID を入れる。
+const channelId = 'YOUR-CHANNEL-ID-HERE';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await LineSDK.instance.setup(channelId).then((_) {
+    debugPrint('LineSDK Prepared');
+  });
   runApp(const MyApp());
 }
 
@@ -55,6 +64,20 @@ class _MyHomePageState extends State<MyHomePage> {
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                try {
+                  final loginResult = await LineSDK.instance.login(
+                    scopes: ['profile'],
+                  );
+                  final token = loginResult.accessToken.value;
+                  debugPrint(token);
+                } on PlatformException catch (e) {
+                  debugPrint(e.message);
+                }
+              },
+              child: const Text('Sign in with LINE'),
             ),
           ],
         ),
