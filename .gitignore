@@ -45,3 +45,6 @@ app.*.map.json
 
 # FVM related
 .fvm/flutter_sdk
+
+# test request files
+test.http
