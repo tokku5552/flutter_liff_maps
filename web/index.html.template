@@ -41,7 +41,7 @@
   <script  charset="utf-8"  src="https://static.line-scdn.net/liff/edge/versions/2.20.3/sdk.js"></script>
   <script src="flutter_liff.js" defer></script>
   <!-- Google Maps API -->
-  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR-API-KEY-HERE></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR-API-KEY-HERE"></script>
 </head>
 <body>
   <script>
