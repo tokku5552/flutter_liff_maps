@@ -15,12 +15,10 @@ dependencies:
   firebase_core: ^2.13.0
   flutter:
     sdk: flutter
-  # LINE Login まわりの開発中に使用する
-  # 最終的には LIFF で LINE Login 相当のことをするので消す。
-  flutter_line_sdk: ^2.3.2
   geoflutterfire_plus: ^0.0.11
   google_maps_flutter: ^2.2.8
   google_maps_flutter_web: ^0.4.0+9
+  js: ^0.6.7
   rxdart: ^0.27.7
 
 dev_dependencies:
