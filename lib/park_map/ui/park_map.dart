@@ -164,60 +164,58 @@ class ParkMapState extends State<ParkMap> {
               );
             },
           ),
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.only(top: 64, left: 16, right: 16),
-            padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
-              color: Colors.black38,
-              borderRadius: BorderRadius.all(Radius.circular(8)),
-            ),
+          Positioned(
+            right: 8,
+            top: 8,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Debug window',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                _ActionButton(
+                  onPressed: () => FirebaseAuth.instance.signOut(),
+                  iconData: Icons.exit_to_app,
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  'Currently detected count: '
-                  '${_markers.length}',
-                  style: const TextStyle(color: Colors.white),
+                _ActionButton(
+                  onPressed: () {},
+                  iconData: Icons.zoom_in_map,
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  'Current radius: '
-                  '${_radiusInKm.toStringAsFixed(1)} (km)',
-                  style: const TextStyle(color: Colors.white),
+                _ActionButton(
+                  onPressed: () {},
+                  iconData: Icons.zoom_out_map,
                 ),
                 const SizedBox(height: 8),
-                Slider(
-                  value: _radiusInKm,
-                  min: 1,
-                  max: 100,
-                  divisions: 99,
-                  label: _radiusInKm.toStringAsFixed(1),
-                  onChanged: (value) => _geoQueryCondition.add(
-                    _GeoQueryCondition(
-                      radiusInKm: value,
-                      cameraPosition: _cameraPosition,
-                    ),
-                  ),
-                ),
+                _ActionButton(onPressed: () {}, iconData: Icons.near_me),
               ],
             ),
-          ),
+          )
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => FirebaseAuth.instance.signOut(),
-        child: const Icon(Icons.exit_to_app_rounded),
+    );
+  }
+}
+
+/// マップの右上の表示する背景色あり角丸の [IconButton] ウィジェット。
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({required this.onPressed, required this.iconData});
+
+  final VoidCallback onPressed;
+
+  final IconData iconData;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 60,
+      width: 60,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: IconButton(
+        color: Theme.of(context).colorScheme.primary,
+        onPressed: onPressed,
+        icon: Icon(iconData),
       ),
     );
   }
