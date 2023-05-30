@@ -46,5 +46,8 @@ app.*.map.json
 # FVM related
 .fvm/flutter_sdk
 
+# Google Maps API Key related
+web/index.html
+
 # test request files
 test.http
