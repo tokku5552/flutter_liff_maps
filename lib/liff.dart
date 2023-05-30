@@ -11,6 +11,11 @@ const liffId = 'YOUR-LIFF-ID-HERE';
 /// いったん開発中はグローバルな変数としておく。
 bool isLiffInitializationErrored = false;
 
+/// LIFF の初期化およびアクセストークンの取得処理でエラー [Object].
+/// 業務水準のアプリでは Riverpod や Provider を使いたいところだが、
+/// いったん開発中はグローバルな変数としておく。
+Object? liffInitializationError;
+
 /// LIFF の初期化を行う。
 /// 何らかの例外やエラーが起きても、アプリがクラッシュまたはずっと読み込み中の
 /// ままとなるのを避け、ひとまず起動を完了させる目的で、[Exception] も [Error]
@@ -32,5 +37,6 @@ Future<void> initializeLiff() async {
   } catch (e) {
     log(e);
     isLiffInitializationErrored = true;
+    liffInitializationError = e;
   }
 }
