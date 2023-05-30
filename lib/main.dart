@@ -26,6 +26,19 @@ class MyApp extends StatelessWidget {
       ),
       home: const ParkMap(),
       builder: (context, child) {
+        if (isLiffInitializationErrored) {
+          return const Scaffold(
+            body: Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'LIFF アプリの初期化に失敗しました。\n'
+                  'LINE のトーク画面から LIFF アプリとして起動してください。',
+                ),
+              ),
+            ),
+          );
+        }
         return AuthGuard(child: child!);
       },
     );
