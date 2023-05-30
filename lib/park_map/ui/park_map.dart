@@ -7,12 +7,11 @@ import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../../firestore_refs.dart';
+import '../park.dart';
+
 /// Tokyo Station location for demo.
 const _tokyoStation = LatLng(35.681236, 139.767125);
-
-/// Reference to the collection where the location data is stored.
-/// `withConverter` is available to type-safely define [CollectionReference].
-final _collectionReference = FirebaseFirestore.instance.collection('locations');
 
 /// Geo query geoQueryCondition.
 class _GeoQueryCondition {
@@ -46,10 +45,9 @@ class ParkMapState extends State<ParkMap> {
   );
 
   /// [Stream] of geo query result.
-  late final Stream<List<DocumentSnapshot<Map<String, dynamic>>>> _stream =
+  late final Stream<List<DocumentSnapshot<Park>>> _stream =
       _geoQueryCondition.switchMap(
-    (geoQueryCondition) =>
-        GeoCollectionReference(_collectionReference).subscribeWithin(
+    (geoQueryCondition) => GeoCollectionReference(parksRef).subscribeWithin(
       center: GeoFirePoint(
         GeoPoint(
           _cameraPosition.target.latitude,
@@ -58,26 +56,24 @@ class ParkMapState extends State<ParkMap> {
       ),
       radiusInKm: geoQueryCondition.radiusInKm,
       field: 'geo',
-      geopointFrom: (data) =>
-          (data['geo'] as Map<String, dynamic>)['geopoint'] as GeoPoint,
+      geopointFrom: (park) => park.geo.geopoint,
       strictMode: true,
     ),
   );
 
   /// Updates [_markers] by fetched geo [DocumentSnapshot]s.
   void _updateMarkersByDocumentSnapshots(
-    List<DocumentSnapshot<Map<String, dynamic>>> documentSnapshots,
+    List<DocumentSnapshot<Park>> documentSnapshots,
   ) {
     final markers = <Marker>{};
     for (final ds in documentSnapshots) {
       final id = ds.id;
-      final data = ds.data();
-      if (data == null) {
+      final park = ds.data();
+      if (park == null) {
         continue;
       }
-      final name = data['name'] as String;
-      final geoPoint =
-          (data['geo'] as Map<String, dynamic>)['geopoint'] as GeoPoint;
+      final name = park.name;
+      final geoPoint = park.geo.geopoint;
       markers.add(_createMarker(id: id, name: name, geoPoint: geoPoint));
     }
     debugPrint('📍 markers count: ${markers.length}');
