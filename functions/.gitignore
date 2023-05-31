@@ -10,3 +10,6 @@ node_modules/
 
 # Fireabse service account key
 keys/
+
+# Environment variables
+.env

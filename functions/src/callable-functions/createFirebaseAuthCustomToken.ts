@@ -2,8 +2,6 @@ import * as admin from 'firebase-admin'
 import * as functions from 'firebase-functions'
 import axios from 'axios'
 
-const LINE_CHANNEL_ID = `1656319899`
-
 /**
  * [Request]
  * GET https://asia-northeast1-flutter-liff-maps-cloudfunctions.net/createFirebaseAuthCustomToken
@@ -49,7 +47,7 @@ const callGetVerifyAPI = async (accessToken: string): Promise<void> => {
     }
 
     const channelId = response.data.client_id
-    if (channelId !== LINE_CHANNEL_ID) {
+    if (channelId !== process.env.LINE_CHANNEL_ID) {
         throw new Error(`LINE Login チャネル ID が正しくありません。`)
     }
 
