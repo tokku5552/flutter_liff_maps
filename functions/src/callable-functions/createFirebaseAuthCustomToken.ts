@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin'
-import * as functions from 'firebase-functions'
 import axios from 'axios'
+import * as functions from 'firebase-functions/v2'
 
 /**
  * [Request]
@@ -25,13 +25,15 @@ import axios from 'axios'
  *
  * をコールし、その妥当性を検証して、該当ユーザーの LINE ID でカスタムトークンを作成して返す。
  */
-export const createFirebaseAuthCustomToken = functions.region(`asia-northeast1`).https.onCall(async (data) => {
-    const accessToken = data.accessToken as string
-    await callGetVerifyAPI(accessToken)
-    const lineUserId = await callGetProfileAPI(accessToken)
-    const customToken = await admin.auth().createCustomToken(lineUserId)
-    return { customToken }
-})
+export const createfirebaseauthcustomtoken = functions.https.onCall<{ accessToken: string }>(
+    async (callableRequest) => {
+        const accessToken = callableRequest.data.accessToken as string
+        await callGetVerifyAPI(accessToken)
+        const lineUserId = await callGetProfileAPI(accessToken)
+        const customToken = await admin.auth().createCustomToken(lineUserId)
+        return { customToken }
+    }
+)
 
 /**
  * Client から送られてきた LINE アクセストークンを使って GET verify API をコールし、

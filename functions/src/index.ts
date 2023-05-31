@@ -1,8 +1,9 @@
 import * as admin from 'firebase-admin'
+import * as functions from 'firebase-functions/v2'
 
 import * as serviceAccountKey from '../keys/service_account_key.json'
 
-// サービスアカウントを環境変数から取得
+/** サービスアカウント */
 const serviceAccount = {
     type: serviceAccountKey.type,
     projectId: serviceAccountKey.project_id,
@@ -23,11 +24,11 @@ admin.initializeApp({
     databaseURL: `https://${serviceAccount.projectId}.firebaseio.com`
 })
 
-/**
- * ここでデプロイする関数をまとめる。
- * admin.initializeApp() の順序の問題でデプロイに失敗するため。
- *  */
-import { createFirebaseAuthCustomToken } from './callable-functions/createFirebaseAuthCustomToken'
+/** Firebase Functions のグローバル設定。 */
+functions.setGlobalOptions({ region: `asia-northeast1` })
+
+/** ここでデプロイする関数をまとめる。 */
+import { createfirebaseauthcustomtoken } from './callable-functions/createFirebaseAuthCustomToken'
 
 /** index.ts で import してデプロイする関数一覧。 */
-export { createFirebaseAuthCustomToken }
+export { createfirebaseauthcustomtoken }
