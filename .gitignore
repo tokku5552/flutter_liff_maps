@@ -46,6 +46,9 @@ app.*.map.json
 # FVM related
 .fvm/flutter_sdk
 
+# Environement variables
+dart_define.json
+
 # Google Maps API Key related
 web/index.html
 

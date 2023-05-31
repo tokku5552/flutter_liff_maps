@@ -3,9 +3,6 @@ import 'package:js/js_util.dart' as js_util;
 import 'js/flutter_liff.dart' as liff;
 import 'js/main_js.dart';
 
-// FIXME: 仮で実行前に LIFF ID を入れる。
-const liffId = 'YOUR-LIFF-ID-HERE';
-
 /// LIFF の初期化およびアクセストークンの取得処理でエラーが起きたどうか。
 /// 業務水準のアプリでは Riverpod や Provider を使いたいところだが、
 /// いったん開発中はグローバルな変数としておく。
@@ -22,6 +19,12 @@ Object? liffInitializationError;
 /// もすべてあえて握り潰し、それに失敗したことを記録しておく。
 Future<void> initializeLiff() async {
   try {
+    const liffId = bool.hasEnvironment('LIFF_ID')
+        ? String.fromEnvironment('LIFF_ID')
+        : null;
+    if (liffId == null) {
+      throw Exception('LIFF ID が dart-define に設定されていません。');
+    }
     await js_util.promiseToFuture<void>(
       liff.init(
         liff.Config(

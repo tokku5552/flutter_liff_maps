@@ -28,7 +28,7 @@ VS Code を使っている場合は、`.vscode/settings.json` の設定により
 ローカルホストの 8080 番ポートでデバッグ実行する。
 
 ```bash
-fvm flutter run -d web-server --web-port 8080
+fvm flutter run -d  web-server --web-port 8080 --dart-define-from-file=dart_define.json
 ```
 
 ngrok をインストールする。
@@ -60,14 +60,16 @@ ngrok を起動したターミナルで表示されている `Forwarding` の `h
 
 ローカルで Flutter アプリのソースコードを編集したら、`fvm flutter run -d web-server --web-port 8080` をしたターミナルで `R` キーを押下してホットリロードすると、再起動した LIFF アプリもその編集内容が反映されるようになるので、そのようにしてデバッグすると良い。
 
-### 環境変数や API キーの設定
+### 環境変数や API キーなどの設定
 
 後に dart-define dotenv などの然るべき方法で設定し直す。
 
-現在のところでは、
+現在のところでは、Flutter および Firebase Functions の開発・ビルドを行う上で下記の設定が必要となっている。
 
-- `lib/liff.dart` の `YOUR-LIFF-ID-HERE` を実際の LIFF ID に差し替える。
-- `web/index.sample.html` をコピーして、`web/index.html` を作成し、`YOUR-API-KEY-HERE` の部分を実際の Google Maps API Key に差し替える。
+- `dart-define.json.template` をコピーして `dart-define.json` を作成し、`YOUR-LIFF-ID-HERE` の部分を実際の LIFF ID に差し替える。
+- `web/index.sample.html` をコピーして `web/index.html` を作成し、`YOUR-API-KEY-HERE` の部分を実際の Google Maps API Key に差し替える。
+- `functions/keys/service_account_key.json` を作成し、Firebase プロジェクトのサービスアカウントキーを反映する。
+- `functions/src/.env.sample` をコピーして `functions/src/.env` を作成し、`YOUR-LINE-CHANNEL-ID-HERE` の部分を実際の Channel ID に差し替える。
 
 ## Feature
 

@@ -48,6 +48,7 @@ const callGetVerifyAPI = async (accessToken: string): Promise<void> => {
 
     const channelId = response.data.client_id
     if (channelId !== process.env.LINE_CHANNEL_ID) {
+        console.error(`channelId: ${channelId}, process.env.LINE_CHANNEL_ID: ${process.env.LINE_CHANNEL_ID}`)
         throw new Error(`LINE Login チャネル ID が正しくありません。`)
     }
 
