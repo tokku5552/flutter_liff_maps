@@ -22,7 +22,7 @@ external Object getAccessToken();
 @anonymous
 class Config {
   external factory Config({
-    String liffId,
+    required String liffId,
     Function? successCallback,
     void Function(dynamic error)? errorCallback,
   });

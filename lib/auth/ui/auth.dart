@@ -113,9 +113,7 @@ class _SignInButtonState extends State<_SignInButton> {
         <String, dynamic>{'accessToken': accessToken},
       );
       final customToken = response.data['customToken'] as String;
-      final userCredential =
-          await FirebaseAuth.instance.signInWithCustomToken(customToken);
-      debugPrint(userCredential.user?.uid);
+      await FirebaseAuth.instance.signInWithCustomToken(customToken);
       scaffoldMessengerState
           .showSnackBar(const SnackBar(content: Text('サインインしました。')));
     }

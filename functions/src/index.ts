@@ -1,11 +1,5 @@
 import * as admin from 'firebase-admin'
 
-// // Start writing functions
-// // https://firebase.google.com/docs/functions/typescript
-//
-// export const helloWorld = functions.https.onRequest((request, response) => {
-//   functions.logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");import * as admin from 'firebase-admin'
 import * as serviceAccountKey from '../keys/service_account_key.json'
 
 // サービスアカウントを環境変数から取得
@@ -22,7 +16,7 @@ const serviceAccount = {
     clientC509CertUrl: serviceAccountKey.client_x509_cert_url
 }
 
-// Firebase Admin SDK の初期化
+// Firebase Admin SDK の初期化。
 // https://firebase.google.com/docs/functions/config-env?hl=ja
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
@@ -35,5 +29,5 @@ admin.initializeApp({
  *  */
 import { createFirebaseAuthCustomToken } from './callable-functions/createFirebaseAuthCustomToken'
 
-/** index.ts で import してデプロイする関数一覧  */
+/** index.ts で import してデプロイする関数一覧。 */
 export { createFirebaseAuthCustomToken }
