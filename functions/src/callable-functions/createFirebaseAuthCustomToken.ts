@@ -6,7 +6,7 @@ const LINE_CHANNEL_ID = `1656319899`
 
 /**
  * [Request]
- * GET https://asia-northeast1-maps-flutter-web-sample.cloudfunctions.net/createFirebaseAuthCustomToken
+ * GET https://asia-northeast1-flutter-liff-maps-cloudfunctions.net/createFirebaseAuthCustomToken
  *
  * {
  *   data: {

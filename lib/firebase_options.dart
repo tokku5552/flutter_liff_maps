@@ -21,9 +21,15 @@ class DefaultFirebaseOptions {
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
-        return android;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for android - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.iOS:
-        return ios;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for ios - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -47,30 +53,12 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyC6Zcp5DEIPkJkn8ZyOKNkQpl8LaxNaWLs',
-    appId: '1:926133512383:web:0d9116f0ce2da86ccd7e0a',
-    messagingSenderId: '926133512383',
-    projectId: 'maps-flutter-web-sample',
-    authDomain: 'maps-flutter-web-sample.firebaseapp.com',
-    storageBucket: 'maps-flutter-web-sample.appspot.com',
-    measurementId: 'G-W8Y0LJZXBX',
-  );
-
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyD3vvPMYIqQAiqZw9rH8KxXcmMU73AFsP0',
-    appId: '1:926133512383:android:ae1a431a23bdc4eecd7e0a',
-    messagingSenderId: '926133512383',
-    projectId: 'maps-flutter-web-sample',
-    storageBucket: 'maps-flutter-web-sample.appspot.com',
-  );
-
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBYZU6Gw0viW07N_quxBRqRQeA57Z2n-zc',
-    appId: '1:926133512383:ios:b801d04f0e622a2fcd7e0a',
-    messagingSenderId: '926133512383',
-    projectId: 'maps-flutter-web-sample',
-    storageBucket: 'maps-flutter-web-sample.appspot.com',
-    iosClientId: '926133512383-r7pa67ej9r38b0gb0p3rv8pdvvqqg622.apps.googleusercontent.com',
-    iosBundleId: 'com.example.flutterLiffMaps',
+    apiKey: 'AIzaSyDSI82lyogldLSiyMfHDYqSaQVm23-fVN4',
+    appId: '1:1063172192294:web:eec02c5a54b86953f20ee7',
+    messagingSenderId: '1063172192294',
+    projectId: 'flutter-liff-maps',
+    authDomain: 'flutter-liff-maps.firebaseapp.com',
+    storageBucket: 'flutter-liff-maps.appspot.com',
+    measurementId: 'G-RQ7YJLT4N1',
   );
 }
