@@ -62,8 +62,6 @@ ngrok を起動したターミナルで表示されている `Forwarding` の `h
 
 ### 環境変数や API キーなどの設定
 
-後に dart-define dotenv などの然るべき方法で設定し直す。
-
 現在のところでは、Flutter および Firebase Functions の開発・ビルドを行う上で下記の設定が必要となっている。
 
 - `dart-define.json.template` をコピーして `dart-define.json` を作成し、`YOUR-LIFF-ID-HERE` の部分を実際の LIFF ID に差し替える。
