@@ -3,5 +3,5 @@
   "dart.sdkPath": ".fvm/flutter_sdk/bin/cache/dart-sdk",
   "dart.runPubGetOnPubspecChanges": "never",
   "eslint.workingDirectories": ["./functions"],
-  "cSpell.words": ["combinators"]
+  "cSpell.words": ["combinators", "createfirebaseauthcustomtoken"]
 }

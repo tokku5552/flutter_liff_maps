@@ -14,7 +14,7 @@ module.exports = {
         `prettier`
     ],
     parser: `@typescript-eslint/parser`,
-    ignorePatterns: [`/lib/**/*`],
+    ignorePatterns: [`/lib/**/*`, `node_modules/**/*`],
     plugins: [`node`, `@typescript-eslint`, `import`],
     rules: {
         quotes: [`error`, `backtick`]

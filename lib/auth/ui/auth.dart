@@ -108,7 +108,7 @@ class _SignInButtonState extends State<_SignInButton> {
       final accessToken =
           await js_util.promiseToFuture<String>(liff.getAccessToken());
       final callable = FirebaseFunctions.instanceFor(region: 'asia-northeast1')
-          .httpsCallable('createFirebaseAuthCustomToken');
+          .httpsCallable('createfirebaseauthcustomtoken');
       final response = await callable.call<Map<String, dynamic>>(
         <String, dynamic>{'accessToken': accessToken},
       );
