@@ -54,3 +54,6 @@ web/index.html
 
 # test request files
 test.http
+
+# cache files
+hosting.*.cache
