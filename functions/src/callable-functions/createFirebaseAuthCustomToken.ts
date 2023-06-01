@@ -3,31 +3,13 @@ import axios from 'axios'
 import * as functions from 'firebase-functions/v2'
 
 /**
- * [Request]
- * GET https://asia-northeast1-flutter-liff-maps-cloudfunctions.net/createFirebaseAuthCustomToken
- *
- * {
- *   data: {
- *     accessToken: <string>
- *   }
- * }
- *
- * [Response]
- *
- * {
- *   customToken: <string>
- * }
- *
- * リクエストボディで受け付けた LINE ログインのアクセストークンから、LINE の
- *
- * - GET verify API
- * - GET profile API
- *
- * をコールし、その妥当性を検証して、該当ユーザーの LINE ID でカスタムトークンを作成して返す。
+ * リクエストボディで受け付けた LINE ログインのアクセストークンから、
+ * LINE のGET verify API, GET profile API をコールし、その妥当性を検証して、
+ * 該当ユーザーの LINE ID でカスタムトークンを作成して返す。
  */
 export const createfirebaseauthcustomtoken = functions.https.onCall<{ accessToken: string }>(
     async (callableRequest) => {
-        const accessToken = callableRequest.data.accessToken as string
+        const accessToken = callableRequest.data.accessToken
         await callGetVerifyAPI(accessToken)
         const lineUserId = await callGetProfileAPI(accessToken)
         const customToken = await admin.auth().createCustomToken(lineUserId)
