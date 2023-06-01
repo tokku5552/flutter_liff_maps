@@ -8,16 +8,16 @@ environment:
   sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  cloud_firestore: ^4.7.1
-  cloud_functions: ^4.3.1
+  cloud_firestore: ^4.8.0
+  cloud_functions: ^4.3.2
   cupertino_icons: ^1.0.5
-  firebase_auth: ^4.6.1
-  firebase_core: ^2.13.0
+  firebase_auth: ^4.6.2
+  firebase_core: ^2.13.1
   flutter:
     sdk: flutter
-  geoflutterfire_plus: ^0.0.11
+  geoflutterfire_plus: ^0.0.12
   google_maps_flutter: ^2.2.8
-  google_maps_flutter_web: ^0.4.0+9
+  google_maps_flutter_web: ^0.5.0
   js: ^0.6.7
   rxdart: ^0.27.7
 
