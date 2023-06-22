@@ -20,7 +20,7 @@ jobs:
       - name: setup dart-define.json
         run: |
           touch dart-define.json
-          echo ${{ secrets.DART_DEFINE }} > dart-define.json
+          echo "${{ secrets.DART_DEFINE }}" > dart-define.json
       - name: build flutter web
         run: flutter build web --dart-define-from-file=dart-define.json
   prepare_node:
@@ -40,6 +40,7 @@ jobs:
           key: cache-node-modules-${{ hashFiles('functions/package-lock.json') }}
       - name: settup key
         run: |
+          mkdir -p functions/keys
           touch functions/keys/service_account_key.json
           echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > functions/keys/service_account_key.json
       - name: npm install
