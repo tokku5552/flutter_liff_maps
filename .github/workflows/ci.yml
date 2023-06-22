@@ -44,11 +44,16 @@ jobs:
         with:
           path: '**/node_modules'
           key: cache-node-modules-${{ hashFiles('functions/package-lock.json') }}
-      - name: settup key
+      - name: make functions/key dir
         run: |
           mkdir -p functions/keys
-          touch functions/keys/service_account_key.json
-          echo-n "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" | base64 --decode > functions/keys/service_account_key.json
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "service_account_key.json"
+          json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          dir: "functions/keys/"
       - name: npm install
         working-directory: functions
         run: |
@@ -101,11 +106,16 @@ jobs:
         with:
           path: '**/node_modules'
           key: cache-node-modules-${{ hashFiles('functions/package-lock.json') }}
-      - name: settup key
+      - name: make functions/key dir
         run: |
           mkdir -p functions/keys
-          touch functions/keys/service_account_key.json
-          echo-n "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" | base64 --decode > functions/keys/service_account_key.json
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "service_account_key.json"
+          json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          dir: "functions/keys/"
       - name: lint
         working-directory: functions
         run: |

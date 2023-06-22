@@ -20,6 +20,13 @@ jobs:
       - name: setup web/index.html
         run: |
           sed -e "s/YOUR-API-KEY-HERE/${{ secrets.GOOGLE_MAP_API_KEY }}/g" web/index.html.template > web/index.html
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "dart-define.json"
+          json: ${{ secrets.DART_DEFINE }}
+          dir: "."
       - run: flutter build web --dart-define-from-file='${{ secrets.DART_DEFINE }}'
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
@@ -44,14 +51,20 @@ jobs:
         with:
           path: '**/node_modules'
           key: cache-node-modules-${{ hashFiles('functions/package-lock.json') }}
+      - name: make functions/key dir
+        run: |
+          mkdir -p functions/keys
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "service_account_key.json"
+          json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          dir: "functions/keys/"
       - name: npm install
         working-directory: functions
         run: |
           npm install
-      - name: settup key
-        run: |
-          touch functions/keys/service_account_key.json
-          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > functions/keys/service_account_key.json
       - name: Deploy to Firebase
         uses: w9jds/firebase-action@master
         with:
