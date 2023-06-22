@@ -44,6 +44,7 @@ class ParkMapState extends State<ParkMap> {
     getCurrentPosition(
       allowInterop((pos) {
         setState(() {
+          // TODO(ryotaiwamoto): 初期値を東京に設定
           _initialTarget = LatLng(
             // ignore: avoid_dynamic_calls
             pos.coords.latitude as double,
