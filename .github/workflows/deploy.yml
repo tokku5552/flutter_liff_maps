@@ -37,6 +37,7 @@ jobs:
         with:
           node-version: 18
           cache: npm
+          cache-dependency-path: functions/package-lock.json
       - name: Cache node modules
         id: cache
         uses: actions/cache@v3
