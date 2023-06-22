@@ -27,7 +27,7 @@ jobs:
           name: "dart-define.json"
           json: ${{ secrets.DART_DEFINE }}
           dir: "."
-      - run: flutter build web --dart-define-from-file='${{ secrets.DART_DEFINE }}'
+      - run: flutter build web --dart-define-from-file='dart-define.json'
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
