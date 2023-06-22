@@ -20,7 +20,7 @@ jobs:
       - name: Download Flutter packages
         run: flutter pub get
           
-      - run: flutter build web --dart-define-from-file='${{ secret.DART_DEFINE }}'
+      - run: flutter build web --dart-define-from-file='${{ secrets.DART_DEFINE }}'
   prepare_node:
     runs-on: ubuntu-latest
     steps:

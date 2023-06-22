@@ -9,19 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
       - name: Install Flutter
         run: |
           git clone https://github.com/flutter/flutter.git --depth 1 -b 3.3.1 "$GITHUB_WORKSPACE/_flutter"
           echo "$GITHUB_WORKSPACE/_flutter/bin" >> $GITHUB_PATH
-
       - name: Add path
         run: echo "$(pwd)/flutter/bin" >> $GITHUB_PATH
-
       - name: Download Flutter packages
         run: flutter pub get
-
-      - run: flutter build web --dart-define-from-file='${{ secret.DART_DEFINE }}'
+      - name: setup web/index.html
+        run: |
+          sed -e "s/YOUR-API-KEY-HERE/${{ secrets.GOOGLE_MAP_API_KEY }}/g" web/index.html.template > web/index.html
+      - run: flutter build web --dart-define-from-file='${{ secrets.DART_DEFINE }}'
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
@@ -30,9 +29,31 @@ jobs:
           projectId: flutter-liff-maps
   deploy_funcsions:
     runs-on: ubuntu-latest
+    env:
+      LINE_CHANNEL_ID: ${{ secrets.LINE_CHANNEL_ID }}
     steps:
       - uses: actions/checkout@v3
-
-      - name: Install Flutter
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+      - name: Cache node modules
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: cache-node-modules-${{ hashFiles('functions/package-lock.json') }}
+      - name: npm install
+        working-directory: functions
         run: |
-          git clone
+          npm install
+      - name: settup key
+        run: |
+          touch functions/keys/service_account_key.json
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > functions/keys/service_account_key.json
+      - name: Deploy to Firebase
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only functions
+        env:
+          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
