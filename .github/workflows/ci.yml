@@ -17,12 +17,12 @@ jobs:
           echo "$GITHUB_WORKSPACE/_flutter/bin" >> $GITHUB_PATH
       - name: Download Flutter packages
         run: flutter pub get
-      - name: setup dart-define.json
-        run: |
-          touch dart-define.json
-          echo "${{ secrets.DART_DEFINE }}" > dart-define.json
+      # - name: setup dart-define.json
+      #   run: |
+      #     touch dart-define.json
+      #     echo "${{ secrets.DART_DEFINE }}" > dart-define.json
       - name: build flutter web
-        run: flutter build web --dart-define-from-file=dart-define.json
+        run: flutter build web --dart-define=LIFF_ID=${{ secrets.LIFF_ID }}
   prepare_node:
     runs-on: ubuntu-latest
     steps:
@@ -64,6 +64,11 @@ jobs:
         with:
           path: '**/node_modules'
           key: cache-node-modules-${{ hashFiles('functions/package-lock.json') }}
+      - name: settup key
+        run: |
+          mkdir -p functions/keys
+          touch functions/keys/service_account_key.json
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > functions/keys/service_account_key.json
       - name: build
         working-directory: functions
         run: |
@@ -85,6 +90,11 @@ jobs:
         with:
           path: '**/node_modules'
           key: cache-node-modules-${{ hashFiles('functions/package-lock.json') }}
+      - name: settup key
+        run: |
+          mkdir -p functions/keys
+          touch functions/keys/service_account_key.json
+          echo "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" > functions/keys/service_account_key.json
       - name: lint
         working-directory: functions
         run: |
