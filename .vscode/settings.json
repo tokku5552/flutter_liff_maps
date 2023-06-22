@@ -3,5 +3,21 @@
   "dart.sdkPath": ".fvm/flutter_sdk/bin/cache/dart-sdk",
   "dart.runPubGetOnPubspecChanges": "never",
   "eslint.workingDirectories": ["./functions"],
-  "cSpell.words": ["combinators", "createfirebaseauthcustomtoken"]
+  "cSpell.words": [
+    "combinators",
+    "createfirebaseauthcustomtoken"
+  ],
+  "yaml.schemas": {
+    "https://d33vqc0rt9ld30.cloudfront.net/latest/gzip/CloudFormationResourceSpecification.json": [
+      "*.cf.yaml",
+      "*.cf.yml",
+      "*.cfn/*.yaml",
+      "*.cfn/*.yml",
+      "cloud*formation/*.yaml",
+      "cloud*formation/*.yml",
+      "CFn/*.yaml",
+      "CFn/*.yml"
+    ],
+    "https://json.schemastore.org/github-workflow.json": "file:///Users/tokudashinnosuke/VSCode/flutter_liff_maps/.github/workflows/deploy.yml"
+  }
 }
