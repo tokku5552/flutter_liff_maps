@@ -69,6 +69,25 @@ ngrok を起動したターミナルで表示されている `Forwarding` の `h
 - `functions/keys/service_account_key.json` を作成し、Firebase プロジェクトのサービスアカウントキーを反映する。
 - `functions/.env.sample` をコピーして `functions/.env` を作成し、`YOUR-LINE-CHANNEL-ID-HERE` の部分を実際の Channel ID に差し替える。
 
+GitHub Actions で secrets として json ファイルを扱うためには base64 エンコード・デコードを利用する。
+
+```bash:
+# encode
+base64 credential.json > encode-credential.txt
+
+# decode
+base64 -d encode-credential.txt
+
+# decode on gha
+echo-n $ANY_SECRET | base64 --decode > ./config/credential.json
+
+# this repository commands (zsh)
+base64 -i dart_define.json > dart_define.txt
+base64 -d -i dart_define.txt | jq
+base64 -i functions/keys/service_account_key.json > functions/keys/service_account_key.txt
+base64 -d -i functions/keys/service_account_key.txt | jq
+```
+
 ## Feature
 
 - 自分の近くにある公園を探すことができる。
