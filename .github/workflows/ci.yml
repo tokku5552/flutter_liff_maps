@@ -20,10 +20,17 @@ jobs:
       - name: setup web/index.html
         run: |
           sed -e "s/YOUR-API-KEY-HERE/${{ secrets.GOOGLE_MAP_API_KEY }}/g" web/index.html.template > web/index.html
-      - name: setup dart-define.json
-        run: |
-          touch dart-define.json
-          echo-n "${{ secrets.DART_DEFINE }}" | base64 --decode > dart-define.json
+      # - name: setup dart-define.json
+      #   run: |
+      #     touch dart-define.json
+      #     echo-n "${{ secrets.DART_DEFINE }}" | base64 --decode > dart-define.json
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "dart-define.json"
+          json: ${{ secrets.DART_DEFINE }}
+          dir: "."
       - name: build flutter web
         run: flutter build web --dart-define-from-file='dart-define.json'
   prepare_node:
@@ -67,11 +74,18 @@ jobs:
         with:
           path: '**/node_modules'
           key: cache-node-modules-${{ hashFiles('functions/package-lock.json') }}
-      - name: settup key
-        run: |
-          mkdir -p functions/keys
-          touch functions/keys/service_account_key.json
-          echo-n "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" | base64 --decode > functions/keys/service_account_key.json
+      # - name: settup key
+      #   run: |
+      #     mkdir -p functions/keys
+      #     touch functions/keys/service_account_key.json
+      #     echo-n "${{ secrets.FIREBASE_SERVICE_ACCOUNT }}" | base64 --decode > functions/keys/service_account_key.json
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "service_account_key.json"
+          json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          dir: "functions/keys/"
       - name: build
         working-directory: functions
         run: |
