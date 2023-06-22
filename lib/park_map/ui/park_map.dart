@@ -41,15 +41,18 @@ class ParkMapState extends State<ParkMap> {
   bool _loading = false;
 
   void getLocation() {
-    getCurrentPosition(allowInterop((pos) {
-      setState(() {
-              _initialTarget = LatLng(
-          pos.coords.latitude as double,
-          pos.coords.longitude as double,
-        );
-      });
-
-    }));
+    getCurrentPosition(
+      allowInterop((pos) {
+        setState(() {
+          _initialTarget = LatLng(
+            // ignore: avoid_dynamic_calls
+            pos.coords.latitude as double,
+            // ignore: avoid_dynamic_calls
+            pos.coords.longitude as double,
+          );
+        });
+      }),
+    );
     setState(() {
       _loading = false;
     });
@@ -126,18 +129,18 @@ class ParkMapState extends State<ParkMap> {
   static const double _initialZoom = 14;
 
   /// Google Maps initial target position.
-  late LatLng _initialTarget;
+  LatLng? _initialTarget;
 
   /// Google Maps initial camera position.
   late final CameraPosition _initialCameraPosition = CameraPosition(
-    target: _initialTarget,
+    target: _initialTarget!,
     zoom: _initialZoom,
   );
 
   @override
   void initState() {
     super.initState();
-_loading = true;
+    _loading = true;
     getLocation();
   }
 
@@ -150,69 +153,73 @@ _loading = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _loading ? const CircularProgressIndicator() : Stack(
-        children: [
-          GoogleMap(
-            zoomControlsEnabled: false,
-            myLocationButtonEnabled: false,
-            initialCameraPosition: _initialCameraPosition,
-            onMapCreated: (_) =>
-                _stream.listen(_updateMarkersByDocumentSnapshots),
-            markers: _markers,
-            circles: {
-              Circle(
-                circleId: const CircleId('value'),
-                center: LatLng(
-                  _cameraPosition.target.latitude,
-                  _cameraPosition.target.longitude,
+      body: _loading
+          ? const CircularProgressIndicator()
+          : _initialTarget == null
+              ? const Text('位置情報の取得できませんでした。')
+              : Stack(
+                  children: [
+                    GoogleMap(
+                      zoomControlsEnabled: false,
+                      myLocationButtonEnabled: false,
+                      initialCameraPosition: _initialCameraPosition,
+                      onMapCreated: (_) =>
+                          _stream.listen(_updateMarkersByDocumentSnapshots),
+                      markers: _markers,
+                      circles: {
+                        Circle(
+                          circleId: const CircleId('value'),
+                          center: LatLng(
+                            _cameraPosition.target.latitude,
+                            _cameraPosition.target.longitude,
+                          ),
+                          // multiple 1000 to convert from kilometers to meters.
+                          radius: _radiusInKm * 1000,
+                          fillColor: Colors.black12,
+                          strokeWidth: 0,
+                        ),
+                      },
+                      onCameraMove: (cameraPosition) {
+                        debugPrint('📷 lat: ${cameraPosition.target.latitude}, '
+                            'lng: ${cameraPosition.target.latitude}');
+                        _geoQueryCondition.add(
+                          _GeoQueryCondition(
+                            radiusInKm: _radiusInKm,
+                            cameraPosition: cameraPosition,
+                          ),
+                        );
+                      },
+                    ),
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          _ActionButton(
+                            onPressed: () => FirebaseAuth.instance.signOut(),
+                            iconData: Icons.exit_to_app,
+                          ),
+                          const SizedBox(height: 8),
+                          _ActionButton(
+                            onPressed: () {},
+                            iconData: Icons.zoom_in_map,
+                          ),
+                          const SizedBox(height: 8),
+                          _ActionButton(
+                            onPressed: () {},
+                            iconData: Icons.zoom_out_map,
+                          ),
+                          const SizedBox(height: 8),
+                          _ActionButton(
+                            onPressed: getLocation,
+                            iconData: Icons.near_me,
+                          ),
+                        ],
+                      ),
+                    )
+                  ],
                 ),
-                // multiple 1000 to convert from kilometers to meters.
-                radius: _radiusInKm * 1000,
-                fillColor: Colors.black12,
-                strokeWidth: 0,
-              ),
-            },
-            onCameraMove: (cameraPosition) {
-              debugPrint('📷 lat: ${cameraPosition.target.latitude}, '
-                  'lng: ${cameraPosition.target.latitude}');
-              _geoQueryCondition.add(
-                _GeoQueryCondition(
-                  radiusInKm: _radiusInKm,
-                  cameraPosition: cameraPosition,
-                ),
-              );
-            },
-          ),
-          Positioned(
-            right: 8,
-            top: 8,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                _ActionButton(
-                  onPressed: () => FirebaseAuth.instance.signOut(),
-                  iconData: Icons.exit_to_app,
-                ),
-                const SizedBox(height: 8),
-                _ActionButton(
-                  onPressed: () {},
-                  iconData: Icons.zoom_in_map,
-                ),
-                const SizedBox(height: 8),
-                _ActionButton(
-                  onPressed: () {},
-                  iconData: Icons.zoom_out_map,
-                ),
-                const SizedBox(height: 8),
-                _ActionButton(
-                  onPressed: getLocation,
-                  iconData: Icons.near_me,
-                ),
-              ],
-            ),
-          )
-        ],
-      ),
     );
   }
 }
