@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:js';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +9,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../firestore_refs.dart';
+import '../../js/location.dart';
 import '../park.dart';
 
 /// Tokyo Station location for demo.
@@ -36,8 +38,25 @@ class ParkMapState extends State<ParkMap> {
   /// [Marker]s on Google Maps.
   Set<Marker> _markers = {};
 
+  bool _loading = false;
+
+  void getLocation() {
+    getCurrentPosition(allowInterop((pos) {
+      setState(() {
+              _initialTarget = LatLng(
+          pos.coords.latitude as double,
+          pos.coords.longitude as double,
+        );
+      });
+
+    }));
+    setState(() {
+      _loading = false;
+    });
+  }
+
   /// [BehaviorSubject] of currently geo query radius and camera position.
-  final _geoQueryCondition = BehaviorSubject<_GeoQueryCondition>.seeded(
+  late final _geoQueryCondition = BehaviorSubject<_GeoQueryCondition>.seeded(
     _GeoQueryCondition(
       radiusInKm: _initialRadiusInKm,
       cameraPosition: _initialCameraPosition,
@@ -107,16 +126,20 @@ class ParkMapState extends State<ParkMap> {
   static const double _initialZoom = 14;
 
   /// Google Maps initial target position.
-  static final LatLng _initialTarget = LatLng(
-    _tokyoStation.latitude,
-    _tokyoStation.longitude,
-  );
+  late LatLng _initialTarget;
 
   /// Google Maps initial camera position.
-  static final _initialCameraPosition = CameraPosition(
+  late final CameraPosition _initialCameraPosition = CameraPosition(
     target: _initialTarget,
     zoom: _initialZoom,
   );
+
+  @override
+  void initState() {
+    super.initState();
+_loading = true;
+    getLocation();
+  }
 
   @override
   void dispose() {
@@ -127,7 +150,7 @@ class ParkMapState extends State<ParkMap> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+      body: _loading ? const CircularProgressIndicator() : Stack(
         children: [
           GoogleMap(
             zoomControlsEnabled: false,
@@ -181,7 +204,10 @@ class ParkMapState extends State<ParkMap> {
                   iconData: Icons.zoom_out_map,
                 ),
                 const SizedBox(height: 8),
-                _ActionButton(onPressed: () {}, iconData: Icons.near_me),
+                _ActionButton(
+                  onPressed: getLocation,
+                  iconData: Icons.near_me,
+                ),
               ],
             ),
           )
