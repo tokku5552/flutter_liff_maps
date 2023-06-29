@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Park {
-  Park({required this.parkId, required this.geo, required this.name});
+  Park._({required this.parkId, required this.geo, required this.name});
 
-  factory Park._fromJson(Map<String, dynamic> json) => Park(
+  factory Park._fromJson(Map<String, dynamic> json) => Park._(
         parkId: json['parkId'] as String,
         geo: Geo.fromJson(json['geo'] as Map<String, dynamic>),
         name: json['name'] as String,
@@ -23,8 +23,11 @@ class Park {
 
   final String name;
 
-  Map<String, dynamic> toJson() =>
-      <String, dynamic>{'geo': geo.toJson(), 'name': name};
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        'parkId': parkId,
+        'geo': geo.toJson(),
+        'name': name,
+      };
 }
 
 class Geo {

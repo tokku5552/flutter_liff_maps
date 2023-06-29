@@ -1,16 +1,29 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CheckIn {
-  CheckIn({required this.appUserId, required this.parkId, this.checkInAt});
+  CheckIn._({
+    required this.checkInId,
+    required this.appUserId,
+    required this.parkId,
+    this.checkInAt,
+  });
 
-  factory CheckIn.fromJson(Map<String, dynamic> json) => CheckIn(
+  factory CheckIn._fromJson(Map<String, dynamic> json) => CheckIn._(
+        checkInId: json['checkInId'] as String,
         appUserId: json['appUserId'] as String,
         parkId: json['parkId'] as String,
         checkInAt: (json['checkInAt'] as Timestamp?)?.toDate(),
       );
 
-  factory CheckIn.fromDocumentSnapshot(DocumentSnapshot documentSnapshot) =>
-      CheckIn.fromJson(documentSnapshot.data()! as Map<String, dynamic>);
+  factory CheckIn.fromDocumentSnapshot(DocumentSnapshot documentSnapshot) {
+    final data = documentSnapshot.data()! as Map<String, dynamic>;
+    return CheckIn._fromJson(<String, dynamic>{
+      ...data,
+      'checkInId': documentSnapshot.id,
+    });
+  }
+
+  final String checkInId;
 
   final String appUserId;
 
@@ -19,7 +32,8 @@ class CheckIn {
   final DateTime? checkInAt;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
-        'lineUserId': appUserId,
+        'checkInId': checkInId,
+        'appUserId': appUserId,
         'parkId': parkId,
         'checkInAt': checkInAt,
       };
