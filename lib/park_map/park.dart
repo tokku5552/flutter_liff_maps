@@ -1,15 +1,23 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Park {
-  Park({required this.geo, required this.name});
+  Park({required this.parkId, required this.geo, required this.name});
 
-  factory Park.fromJson(Map<String, dynamic> json) => Park(
+  factory Park._fromJson(Map<String, dynamic> json) => Park(
+        parkId: json['parkId'] as String,
         geo: Geo.fromJson(json['geo'] as Map<String, dynamic>),
         name: json['name'] as String,
       );
 
-  factory Park.fromDocumentSnapshot(DocumentSnapshot documentSnapshot) =>
-      Park.fromJson(documentSnapshot.data()! as Map<String, dynamic>);
+  factory Park.fromDocumentSnapshot(DocumentSnapshot documentSnapshot) {
+    final data = documentSnapshot.data()! as Map<String, dynamic>;
+    return Park._fromJson({
+      ...data,
+      'parkId': documentSnapshot.id,
+    });
+  }
+
+  final String parkId;
 
   final Geo geo;
 
