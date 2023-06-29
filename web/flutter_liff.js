@@ -6,6 +6,10 @@ async function init(config) {
       withLoginOnEternalBrowser: true,
     })
     .then(() => {
+      // LIFF アプリとして起動していないかつログインしていなければログインする。
+      if(!liff.isInClient() && !liff.isLoggedIn()){
+        liff.login()
+      }
       config['successCallback']()
     })
     .catch((err) => {
