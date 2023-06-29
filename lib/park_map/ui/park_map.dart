@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../firestore_refs.dart';
@@ -22,7 +24,10 @@ class _GeoQueryCondition {
     required this.cameraPosition,
   });
 
+  /// 検出半径。
   final double radiusInKm;
+
+  /// 中心位置。
   final CameraPosition cameraPosition;
 }
 
@@ -117,7 +122,13 @@ class ParkMapState extends State<ParkMap> {
   static const double _initialZoom = 14;
 
   /// 画面高さに対する [GoogleMap] ウィジェットの高さの割合。
-  static const double _mapHeightRatio = 0.7;
+  static const double _mapHeightRatio = 0.6;
+
+  /// 検出半径を調整する [Slider] ウィジェットの高さの割合。
+  static const double _sliderHeightRatio = 0.1;
+
+  /// [CheckIn] 一覧を表示する [PageView] ウィジェットの高さの割合。
+  double get _pageViewHeightRatio => 1 - (_mapHeightRatio + _sliderHeightRatio);
 
   /// [GoogleMap] ウィジェット表示時の初期値。
   static final LatLng _initialTarget = LatLng(
@@ -166,8 +177,6 @@ class ParkMapState extends State<ParkMap> {
                 ),
               },
               onCameraMove: (cameraPosition) {
-                debugPrint('📷 lat: ${cameraPosition.target.latitude}, '
-                    'lng: ${cameraPosition.target.latitude}');
                 _geoQueryCondition.add(
                   _GeoQueryCondition(
                     radiusInKm: _radiusInKm,
@@ -178,10 +187,41 @@ class ParkMapState extends State<ParkMap> {
             ),
           ),
           SizedBox(
-            height: displayHeight * (1 - _mapHeightRatio),
+            height: displayHeight * _sliderHeightRatio,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('現在の検出半径: ${_radiusInKm}km'),
+                  const SizedBox(height: 8),
+                  Slider(
+                    value: _radiusInKm,
+                    min: 1,
+                    max: 10,
+                    divisions: 9,
+                    label: _radiusInKm.toStringAsFixed(1),
+                    onChanged: (value) => _geoQueryCondition.add(
+                      _GeoQueryCondition(
+                        radiusInKm: value,
+                        cameraPosition: _cameraPosition,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(
+            height: displayHeight * _pageViewHeightRatio,
             child: _ParksPageView(_parks),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => FirebaseAuth.instance.signOut(),
+        child: const Icon(Icons.exit_to_app),
       ),
     );
   }
@@ -217,9 +257,19 @@ class _ParksPageViewState extends State<_ParksPageView> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    park.name,
-                    style: Theme.of(context).textTheme.titleLarge,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          park.name,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => _checkIn(park),
+                        child: const Text('チェックイン'),
+                      ),
+                    ],
                   ),
                   const Divider(),
                   const SizedBox(height: 16),
@@ -230,6 +280,21 @@ class _ParksPageViewState extends State<_ParksPageView> {
           ),
       ],
     );
+  }
+
+  /// チェックインする。
+  Future<void> _checkIn(Park park) async {
+    final scaffoldMessengerState = ScaffoldMessenger.of(context);
+    await addCheckIn(
+      appUserId: FirebaseAuth.instance.currentUser!.uid,
+      parkId: park.parkId,
+    );
+    scaffoldMessengerState.showSnackBar(
+      SnackBar(
+        content: Text('「${park.name}」にチェックインしました。'),
+      ),
+    );
+    setState(() {});
   }
 }
 
@@ -253,7 +318,9 @@ class _CheckInsListViewState extends State<_CheckInsListView> {
           return const SizedBox();
         }
         final checkIns = snapshot.data ?? [];
-        // TODO: checkIns.isEmpty の場合の UI を変える。
+        if (checkIns.isEmpty) {
+          return const Text('まだチェックインしたユーザーはいません。');
+        }
         return ListView.builder(
           itemCount: checkIns.length,
           itemBuilder: (context, index) {
@@ -272,6 +339,8 @@ class _CheckInListTile extends StatelessWidget {
 
   final CheckIn checkIn;
 
+  static const double _imageRadius = 24;
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<AppUser?>(
@@ -285,45 +354,26 @@ class _CheckInListTile extends StatelessWidget {
           return const SizedBox();
         }
         return ListTile(
-          leading: ClipOval(
-            child: Image.network(
-              // TODO: あとでユーザーにプロフィール画像をもたせて表示する。
-              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQa9CxANJNRt1p0KyW32FjE6xLctwNVP9vbafzzyUAfUA&s',
-              height: 48,
-              width: 48,
-              fit: BoxFit.cover,
-            ),
-          ),
+          leading: (appUser.imageUrl ?? '').isEmpty
+              ? const CircleAvatar(
+                  radius: _imageRadius,
+                  backgroundColor: Colors.grey,
+                  child: Icon(Icons.person, size: _imageRadius * 2),
+                )
+              : ClipOval(
+                  child: Image.network(
+                    appUser.imageUrl!,
+                    height: _imageRadius * 2,
+                    width: _imageRadius * 2,
+                    fit: BoxFit.cover,
+                  ),
+                ),
           title: Text(appUser.name),
-          subtitle: Text(checkIn.checkInAt.toString()),
+          subtitle: checkIn.checkInAt != null
+              ? Text(DateFormat('yyyy年MM月dd日 HH:mm').format(checkIn.checkInAt!))
+              : null,
         );
       },
-    );
-  }
-}
-
-/// マップの右上の表示する背景色あり角丸の [IconButton] ウィジェット。
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({required this.onPressed, required this.iconData});
-
-  final VoidCallback onPressed;
-
-  final IconData iconData;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 60,
-      width: 60,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: IconButton(
-        color: Theme.of(context).colorScheme.primary,
-        onPressed: onPressed,
-        icon: Icon(iconData),
-      ),
     );
   }
 }
