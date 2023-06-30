@@ -1,0 +1,122 @@
+name: ci
+
+on: 
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_web:
+    if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Flutter
+        run: |
+          git clone https://github.com/flutter/flutter.git --depth 1 -b 3.10.2 "$GITHUB_WORKSPACE/_flutter"
+          echo "$GITHUB_WORKSPACE/_flutter/bin" >> $GITHUB_PATH
+      - name: Download Flutter packages
+        run: flutter pub get
+      - name: setup web/index.html
+        run: |
+          sed -e "s/YOUR-API-KEY-HERE/${{ secrets.GOOGLE_MAP_API_KEY }}/g" web/index.html.template > web/index.html
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "dart-define.json"
+          json: ${{ secrets.DART_DEFINE }}
+          dir: "."
+      - name: build flutter web
+        run: flutter build web --dart-define-from-file='dart-define.json'
+  prepare_node:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+      - name: Cache node modules
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: cache-node-modules-${{ hashFiles('functions/package-lock.json') }}
+      - name: make functions/key dir
+        run: |
+          mkdir -p functions/keys
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "service_account_key.json"
+          json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          dir: "functions/keys/"
+      - name: npm install
+        working-directory: functions
+        run: |
+          npm install
+  build_functions:
+    if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
+    runs-on: ubuntu-latest
+    needs: prepare_node
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+      - name: Cache node modules
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: cache-node-modules-${{ hashFiles('functions/package-lock.json') }}
+      - name: make functions/key dir
+        run: |
+          mkdir -p functions/keys
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "service_account_key.json"
+          json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          dir: "functions/keys/"
+      - name: build
+        working-directory: functions
+        run: |
+          npm run build
+  lint_functions:
+    if: '${{ github.event.pull_request.head.repo.full_name == github.repository }}'
+    runs-on: ubuntu-latest
+    needs: prepare_node
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+      - name: Cache node modules
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: '**/node_modules'
+          key: cache-node-modules-${{ hashFiles('functions/package-lock.json') }}
+      - name: make functions/key dir
+        run: |
+          mkdir -p functions/keys
+      - name: create-json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "service_account_key.json"
+          json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          dir: "functions/keys/"
+      - name: lint
+        working-directory: functions
+        run: |
+          npm run lint

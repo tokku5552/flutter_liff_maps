@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'auth/ui/auth.dart';
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+      scrollBehavior: _AppScrollBehavior(),
       debugShowCheckedModeBanner: false,
       home: const ParkMap(),
       builder: (context, child) {
@@ -45,4 +47,14 @@ class MyApp extends StatelessWidget {
       },
     );
   }
+}
+
+/// マウスやトラックパッドで自然なスクロール挙動にするための設定。
+class _AppScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+      };
 }

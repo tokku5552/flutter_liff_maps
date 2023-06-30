@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:js';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -10,12 +9,15 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../firestore_refs.dart';
 import '../../js/location.dart';
+import '../app_user.dart';
+import '../check_in.dart';
+import '../firestore.dart';
 import '../park.dart';
 
-/// Tokyo Station location for demo.
+/// 東京駅の緯度経度。
 const _tokyoStation = LatLng(35.681236, 139.767125);
 
-/// Geo query geoQueryCondition.
+/// 公園の検出条件。
 class _GeoQueryCondition {
   _GeoQueryCondition({
     required this.radiusInKm,
@@ -26,6 +28,7 @@ class _GeoQueryCondition {
   final CameraPosition cameraPosition;
 }
 
+/// 上部に [GoogleMap]、下部に取得された公園と [CheckIn] 一覧を表示する UI.
 class ParkMap extends StatefulWidget {
   const ParkMap({super.key});
 
@@ -33,24 +36,22 @@ class ParkMap extends StatefulWidget {
   ParkMapState createState() => ParkMapState();
 }
 
-/// ParkMap page using [GoogleMap].
 class ParkMapState extends State<ParkMap> {
-  /// [Marker]s on Google Maps.
-  Set<Marker> _markers = {};
-
+  /// Google Maps 上に表示される [Marker] 一覧。
+  final Set<Marker> _markers = {};
   bool _loading = false;
 
-  void getLocation() {
+  Future<void> getLocation() async {
     getCurrentPosition(
       allowInterop((pos) {
         setState(() {
-          // TODO(ryotaiwamoto): 初期値を東京に設定
           _initialTarget = LatLng(
             // ignore: avoid_dynamic_calls
             pos.coords.latitude as double,
             // ignore: avoid_dynamic_calls
             pos.coords.longitude as double,
           );
+          _initialTarget ??= _tokyoStation;
         });
       }),
     );
@@ -59,7 +60,10 @@ class ParkMapState extends State<ParkMap> {
     });
   }
 
-  /// [BehaviorSubject] of currently geo query radius and camera position.
+  /// Google Maps 上で取得された [Park] 一覧。
+  final List<Park> _parks = [];
+
+  /// 現在の公園の検出条件の [BehaviorSubject].
   late final _geoQueryCondition = BehaviorSubject<_GeoQueryCondition>.seeded(
     _GeoQueryCondition(
       radiusInKm: _initialRadiusInKm,
@@ -67,7 +71,7 @@ class ParkMapState extends State<ParkMap> {
     ),
   );
 
-  /// [Stream] of geo query result.
+  /// 公園の取得結果の [Stream].
   late final Stream<List<DocumentSnapshot<Park>>> _stream =
       _geoQueryCondition.switchMap(
     (geoQueryCondition) => GeoCollectionReference(parksRef).subscribeWithin(
@@ -84,11 +88,12 @@ class ParkMapState extends State<ParkMap> {
     ),
   );
 
-  /// Updates [_markers] by fetched geo [DocumentSnapshot]s.
+  /// 得られた公園の [DocumentSnapshot] から、[_markers] を更新する。
   void _updateMarkersByDocumentSnapshots(
     List<DocumentSnapshot<Park>> documentSnapshots,
   ) {
     final markers = <Marker>{};
+    final parks = <Park>[];
     for (final ds in documentSnapshots) {
       final id = ds.id;
       final park = ds.data();
@@ -98,14 +103,18 @@ class ParkMapState extends State<ParkMap> {
       final name = park.name;
       final geoPoint = park.geo.geopoint;
       markers.add(_createMarker(id: id, name: name, geoPoint: geoPoint));
+      parks.add(park);
     }
-    debugPrint('📍 markers count: ${markers.length}');
-    setState(() {
-      _markers = markers;
-    });
+    _markers
+      ..clear()
+      ..addAll(markers);
+    _parks
+      ..clear()
+      ..addAll(parks);
+    setState(() {});
   }
 
-  /// Creates a [Marker] by fetched geo location.
+  /// 取得された公園から [GoogleMap] 上に表示する [Marker] を生成する。
   Marker _createMarker({
     required String id,
     required String name,
@@ -117,32 +126,35 @@ class ParkMapState extends State<ParkMap> {
         infoWindow: InfoWindow(title: name),
       );
 
-  /// Current detecting radius in kilometers.
+  /// 現在のカメラの中心位置からの検出半径 (km)。
   double get _radiusInKm => _geoQueryCondition.value.radiusInKm;
 
-  /// Current camera position on Google Maps.
+  /// 現在のカメラの中心位置。
   CameraPosition get _cameraPosition => _geoQueryCondition.value.cameraPosition;
 
-  /// Initial geo query detection radius in km.
+  /// 中心位置からの検出半径の初期値。
   static const double _initialRadiusInKm = 1;
 
-  /// Google Maps initial camera zoom level.
+  /// ズームレベルの初期値。
   static const double _initialZoom = 14;
 
-  /// Google Maps initial target position.
+  /// 画面高さに対する [GoogleMap] ウィジェットの高さの割合。
+  static const double _mapHeightRatio = 0.7;
+
+  /// [GoogleMap] ウィジェット表示時の初期値。
   LatLng? _initialTarget;
 
-  /// Google Maps initial camera position.
-  late final CameraPosition _initialCameraPosition = CameraPosition(
+  /// [GoogleMap] ウィジェット表示時カメライチの初期値。
+  late final _initialCameraPosition = CameraPosition(
     target: _initialTarget!,
     zoom: _initialZoom,
   );
 
   @override
   void initState() {
-    super.initState();
     _loading = true;
     getLocation();
+    super.initState();
   }
 
   @override
@@ -153,74 +165,170 @@ class ParkMapState extends State<ParkMap> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
+    final displayHeight = size.height;
     return Scaffold(
       body: _loading
           ? const CircularProgressIndicator()
           : _initialTarget == null
               ? const Text('位置情報の取得できませんでした。')
-              : Stack(
+              : Column(
                   children: [
-                    GoogleMap(
-                      zoomControlsEnabled: false,
-                      myLocationButtonEnabled: false,
-                      initialCameraPosition: _initialCameraPosition,
-                      onMapCreated: (_) =>
-                          _stream.listen(_updateMarkersByDocumentSnapshots),
-                      markers: _markers,
-                      circles: {
-                        Circle(
-                          circleId: const CircleId('value'),
-                          center: LatLng(
-                            _cameraPosition.target.latitude,
-                            _cameraPosition.target.longitude,
+                    SizedBox(
+                      height: displayHeight * _mapHeightRatio,
+                      child: GoogleMap(
+                        zoomControlsEnabled: false,
+                        myLocationButtonEnabled: false,
+                        initialCameraPosition: _initialCameraPosition,
+                        onMapCreated: (_) =>
+                            _stream.listen(_updateMarkersByDocumentSnapshots),
+                        markers: _markers,
+                        circles: {
+                          Circle(
+                            circleId: const CircleId('value'),
+                            center: LatLng(
+                              _cameraPosition.target.latitude,
+                              _cameraPosition.target.longitude,
+                            ),
+                            radius: _radiusInKm * 1000,
+                            fillColor: Colors.black12,
+                            strokeWidth: 0,
                           ),
-                          // multiple 1000 to convert from kilometers to meters.
-                          radius: _radiusInKm * 1000,
-                          fillColor: Colors.black12,
-                          strokeWidth: 0,
-                        ),
-                      },
-                      onCameraMove: (cameraPosition) {
-                        debugPrint('📷 lat: ${cameraPosition.target.latitude}, '
-                            'lng: ${cameraPosition.target.latitude}');
-                        _geoQueryCondition.add(
-                          _GeoQueryCondition(
-                            radiusInKm: _radiusInKm,
-                            cameraPosition: cameraPosition,
-                          ),
-                        );
-                      },
-                    ),
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          _ActionButton(
-                            onPressed: () => FirebaseAuth.instance.signOut(),
-                            iconData: Icons.exit_to_app,
-                          ),
-                          const SizedBox(height: 8),
-                          _ActionButton(
-                            onPressed: () {},
-                            iconData: Icons.zoom_in_map,
-                          ),
-                          const SizedBox(height: 8),
-                          _ActionButton(
-                            onPressed: () {},
-                            iconData: Icons.zoom_out_map,
-                          ),
-                          const SizedBox(height: 8),
-                          _ActionButton(
-                            onPressed: getLocation,
-                            iconData: Icons.near_me,
-                          ),
-                        ],
+                        },
+                        onCameraMove: (cameraPosition) {
+                          debugPrint(
+                              '📷 lat: ${cameraPosition.target.latitude}, '
+                              'lng: ${cameraPosition.target.latitude}');
+                          _geoQueryCondition.add(
+                            _GeoQueryCondition(
+                              radiusInKm: _radiusInKm,
+                              cameraPosition: cameraPosition,
+                            ),
+                          );
+                        },
                       ),
-                    )
+                    ),
+                    SizedBox(
+                      height: displayHeight * (1 - _mapHeightRatio),
+                      child: _ParksPageView(_parks),
+                    ),
                   ],
                 ),
+    );
+  }
+}
+
+/// マップの株に表示する [PageView] ウィジェット。
+class _ParksPageView extends StatefulWidget {
+  const _ParksPageView(this.parks);
+
+  final List<Park> parks;
+
+  @override
+  State<_ParksPageView> createState() => _ParksPageViewState();
+}
+
+class _ParksPageViewState extends State<_ParksPageView> {
+  final _pageController = PageController(viewportFraction: _viewportFraction);
+
+  static const _viewportFraction = 0.85;
+
+  @override
+  Widget build(BuildContext context) {
+    return PageView(
+      controller: _pageController,
+      physics: const ClampingScrollPhysics(),
+      onPageChanged: (index) {},
+      children: [
+        for (final park in widget.parks)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    park.name,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const Divider(),
+                  const SizedBox(height: 16),
+                  Expanded(child: _CheckInsListView(parkId: park.parkId)),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// [CheckIn] 一覧の UI.
+class _CheckInsListView extends StatefulWidget {
+  const _CheckInsListView({required this.parkId});
+
+  final String parkId;
+
+  @override
+  State<_CheckInsListView> createState() => _CheckInsListViewState();
+}
+
+class _CheckInsListViewState extends State<_CheckInsListView> {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<CheckIn>>(
+      future: fetchCheckInsOfPark(widget.parkId),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox();
+        }
+        final checkIns = snapshot.data ?? [];
+        // TODO: checkIns.isEmpty の場合の UI を変える。
+        return ListView.builder(
+          itemCount: checkIns.length,
+          itemBuilder: (context, index) {
+            final checkIn = checkIns[index];
+            return _CheckInListTile(checkIn: checkIn);
+          },
+        );
+      },
+    );
+  }
+}
+
+/// [CheckIn] の [ListTile].
+class _CheckInListTile extends StatelessWidget {
+  const _CheckInListTile({required this.checkIn});
+
+  final CheckIn checkIn;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<AppUser?>(
+      future: fetchAppUser(checkIn.appUserId),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const SizedBox();
+        }
+        final appUser = snapshot.data;
+        if (appUser == null) {
+          return const SizedBox();
+        }
+        return ListTile(
+          leading: ClipOval(
+            child: Image.network(
+              // TODO: あとでユーザーにプロフィール画像をもたせて表示する。
+              'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQa9CxANJNRt1p0KyW32FjE6xLctwNVP9vbafzzyUAfUA&s',
+              height: 48,
+              width: 48,
+              fit: BoxFit.cover,
+            ),
+          ),
+          title: Text(appUser.name),
+          subtitle: Text(checkIn.checkInAt.toString()),
+        );
+      },
     );
   }
 }
