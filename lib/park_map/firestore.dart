@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import '../firestore_refs.dart';
 import 'app_user.dart';
 import 'check_in.dart';
@@ -13,3 +15,15 @@ Future<AppUser?> fetchAppUser(String appUserId) async {
   final ds = await appUserRef(appUserId: appUserId).get();
   return ds.data();
 }
+
+// TODO: 書き込み用の CheckIn 型と CollectionReference を用いて型安全にする？
+/// [CheckIn] を作成する。
+Future<void> addCheckIn({
+  required String appUserId,
+  required String parkId,
+}) =>
+    FirebaseFirestore.instance.collection('checkIns').add(<String, dynamic>{
+      'appUserId': appUserId,
+      'parkId': parkId,
+      'checkInAt': FieldValue.serverTimestamp(),
+    });
