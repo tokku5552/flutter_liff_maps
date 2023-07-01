@@ -51,6 +51,9 @@ class ParkMapState extends State<ParkMap> {
   /// Google Maps 上で取得された [Park] 一覧。
   final List<Park> _parks = [];
 
+  /// 初回の公園データ取得が済んだかどうか。
+  bool _initialDataLoaded = false;
+
   /// 現在の公園の検出条件の [BehaviorSubject].
   late final _geoQueryCondition = BehaviorSubject<_GeoQueryCondition>.seeded(
     _GeoQueryCondition(
@@ -99,6 +102,7 @@ class ParkMapState extends State<ParkMap> {
     _parks
       ..clear()
       ..addAll(parks);
+    _initialDataLoaded = true;
     setState(() {});
   }
 
@@ -136,11 +140,11 @@ class ParkMapState extends State<ParkMap> {
   double get _pageViewHeightRatio => 1 - (_mapHeightRatio + _sliderHeightRatio);
 
   /// [GoogleMap] ウィジェット表示時の初期値。
-  final LatLng _initialTarget = _tokyoStation;
+  final LatLng _initialLocation = _tokyoStation;
 
   /// [GoogleMap] ウィジェット表示時カメラ位置の初期値。
   late final _initialCameraPosition = CameraPosition(
-    target: _initialTarget,
+    target: _initialLocation,
     zoom: _initialZoom,
   );
 
@@ -177,6 +181,7 @@ class ParkMapState extends State<ParkMap> {
     final displayHeight = size.height;
     return Scaffold(
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             height: displayHeight * _mapHeightRatio,
@@ -252,10 +257,21 @@ class ParkMapState extends State<ParkMap> {
               ),
             ),
           ),
-          SizedBox(
-            height: displayHeight * _pageViewHeightRatio,
-            child: _ParksPageView(_parks),
-          ),
+          if (!_initialDataLoaded)
+            const Center(child: CircularProgressIndicator())
+          else if (_parks.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                '周辺に公園が見つかりません。'
+                'マップの位置を移動したり、検出半径を広げたりしてください。',
+              ),
+            )
+          else
+            SizedBox(
+              height: displayHeight * _pageViewHeightRatio,
+              child: _ParksPageView(_parks),
+            ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
