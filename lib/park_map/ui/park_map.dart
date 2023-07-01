@@ -42,31 +42,11 @@ class ParkMap extends StatefulWidget {
 }
 
 class ParkMapState extends State<ParkMap> {
+  /// [GoogleMap] ウィジェットの onMapCreated で得られるコントローラインスタンス。
+  late final GoogleMapController _googleMapController;
+
   /// Google Maps 上に表示される [Marker] 一覧。
   final Set<Marker> _markers = {};
-  bool _loading = false;
-
-  Future<void> getLocation() async {
-    getCurrentPosition(
-      allowInterop((position) {
-        setState(() {
-          if (position == null) {
-            _initialTarget = _tokyoStation;
-          } else {
-            _initialTarget = LatLng(
-              // ignore: avoid_dynamic_calls
-              position.coords.latitude as double,
-              // ignore: avoid_dynamic_calls
-              position.coords.longitude as double,
-            );
-          }
-        });
-      }),
-    );
-    setState(() {
-      _loading = false;
-    });
-  }
 
   /// Google Maps 上で取得された [Park] 一覧。
   final List<Park> _parks = [];
@@ -156,18 +136,32 @@ class ParkMapState extends State<ParkMap> {
   double get _pageViewHeightRatio => 1 - (_mapHeightRatio + _sliderHeightRatio);
 
   /// [GoogleMap] ウィジェット表示時の初期値。
-  late final LatLng _initialTarget;
+  final LatLng _initialTarget = _tokyoStation;
 
-  /// [GoogleMap] ウィジェット表示時カメライチの初期値。
+  /// [GoogleMap] ウィジェット表示時カメラ位置の初期値。
   late final _initialCameraPosition = CameraPosition(
     target: _initialTarget,
     zoom: _initialZoom,
   );
 
+  /// ブラウザが現在地を取得することを許可している場合は、カメラの現在位置と
+  /// 公園の検出条件の中心地位を、現在位置に動かす。
+  void _maybeMoveToCurrentLocation() {
+    getCurrentPosition(
+      allowInterop((position) {
+        final latLng = LatLng(
+          // ignore: avoid_dynamic_calls
+          position.coords.latitude as double,
+          // ignore: avoid_dynamic_calls
+          position.coords.longitude as double,
+        );
+        _googleMapController.animateCamera(CameraUpdate.newLatLng(latLng));
+      }),
+    );
+  }
+
   @override
   void initState() {
-    _loading = true;
-    getLocation();
     super.initState();
   }
 
@@ -182,48 +176,51 @@ class ParkMapState extends State<ParkMap> {
     final size = MediaQuery.sizeOf(context);
     final displayHeight = size.height;
     return Scaffold(
-      body: _loading
-          ? const CircularProgressIndicator()
-          : Column(
-              children: [
-                SizedBox(
-                  height: displayHeight * _mapHeightRatio,
-                  child: GoogleMap(
-                    zoomControlsEnabled: false,
-                    myLocationButtonEnabled: false,
-                    initialCameraPosition: _initialCameraPosition,
-                    onMapCreated: (_) =>
-                        _stream.listen(_updateMarkersByDocumentSnapshots),
-                    markers: _markers,
-                    circles: {
-                      Circle(
-                        circleId: const CircleId('value'),
-                        center: LatLng(
-                          _cameraPosition.target.latitude,
-                          _cameraPosition.target.longitude,
-                        ),
-                        radius: _radiusInKm * 1000,
-                        fillColor: Colors.black12,
-                        strokeWidth: 0,
-                      ),
-                    },
-                    onCameraMove: (cameraPosition) {
-                      _geoQueryCondition.add(
-                        _GeoQueryCondition(
-                          radiusInKm: _radiusInKm,
-                          cameraPosition: cameraPosition,
-                        ),
-                      );
-                    },
+      body: Column(
+        children: [
+          SizedBox(
+            height: displayHeight * _mapHeightRatio,
+            child: GoogleMap(
+              zoomControlsEnabled: false,
+              myLocationButtonEnabled: false,
+              initialCameraPosition: _initialCameraPosition,
+              onMapCreated: (controller) {
+                _googleMapController = controller;
+                _stream.listen(_updateMarkersByDocumentSnapshots);
+              },
+              markers: _markers,
+              circles: {
+                Circle(
+                  circleId: const CircleId('value'),
+                  center: LatLng(
+                    _cameraPosition.target.latitude,
+                    _cameraPosition.target.longitude,
                   ),
+                  radius: _radiusInKm * 1000,
+                  fillColor: Colors.black12,
+                  strokeWidth: 0,
                 ),
-                SizedBox(
-                  height: displayHeight * _sliderHeightRatio,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 4,
-                    ),
+              },
+              onCameraMove: (cameraPosition) {
+                _geoQueryCondition.add(
+                  _GeoQueryCondition(
+                    radiusInKm: _radiusInKm,
+                    cameraPosition: cameraPosition,
+                  ),
+                );
+              },
+            ),
+          ),
+          SizedBox(
+            height: displayHeight * _sliderHeightRatio,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 4,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -246,13 +243,21 @@ class ParkMapState extends State<ParkMap> {
                       ],
                     ),
                   ),
-                ),
-                SizedBox(
-                  height: displayHeight * _pageViewHeightRatio,
-                  child: _ParksPageView(_parks),
-                ),
-              ],
+                  const SizedBox(width: 16),
+                  IconButton(
+                    onPressed: _maybeMoveToCurrentLocation,
+                    icon: const Icon(Icons.near_me),
+                  ),
+                ],
+              ),
             ),
+          ),
+          SizedBox(
+            height: displayHeight * _pageViewHeightRatio,
+            child: _ParksPageView(_parks),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => FirebaseAuth.instance.signOut(),
         child: const Icon(Icons.exit_to_app),
