@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:js/js.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../firestore_refs.dart';
+import '../../js/location.dart';
 import '../app_user.dart';
 import '../check_in.dart';
 import '../firestore.dart';
@@ -40,6 +42,9 @@ class ParkMap extends StatefulWidget {
 }
 
 class ParkMapState extends State<ParkMap> {
+  /// [GoogleMap] ウィジェットの onMapCreated で得られるコントローラインスタンス。
+  late final GoogleMapController _googleMapController;
+
   /// Google Maps 上に表示される [Marker] 一覧。
   final Set<Marker> _markers = {};
 
@@ -47,7 +52,7 @@ class ParkMapState extends State<ParkMap> {
   final List<Park> _parks = [];
 
   /// 現在の公園の検出条件の [BehaviorSubject].
-  final _geoQueryCondition = BehaviorSubject<_GeoQueryCondition>.seeded(
+  late final _geoQueryCondition = BehaviorSubject<_GeoQueryCondition>.seeded(
     _GeoQueryCondition(
       radiusInKm: _initialRadiusInKm,
       cameraPosition: _initialCameraPosition,
@@ -131,16 +136,34 @@ class ParkMapState extends State<ParkMap> {
   double get _pageViewHeightRatio => 1 - (_mapHeightRatio + _sliderHeightRatio);
 
   /// [GoogleMap] ウィジェット表示時の初期値。
-  static final LatLng _initialTarget = LatLng(
-    _tokyoStation.latitude,
-    _tokyoStation.longitude,
-  );
+  final LatLng _initialTarget = _tokyoStation;
 
-  /// [GoogleMap] ウィジェット表示時カメライチの初期値。
-  static final _initialCameraPosition = CameraPosition(
+  /// [GoogleMap] ウィジェット表示時カメラ位置の初期値。
+  late final _initialCameraPosition = CameraPosition(
     target: _initialTarget,
     zoom: _initialZoom,
   );
+
+  /// ブラウザが現在地を取得することを許可している場合は、カメラの現在位置と
+  /// 公園の検出条件の中心地位を、現在位置に動かす。
+  void _maybeMoveToCurrentLocation() {
+    getCurrentPosition(
+      allowInterop((position) {
+        final latLng = LatLng(
+          // ignore: avoid_dynamic_calls
+          position.coords.latitude as double,
+          // ignore: avoid_dynamic_calls
+          position.coords.longitude as double,
+        );
+        _googleMapController.animateCamera(CameraUpdate.newLatLng(latLng));
+      }),
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -161,8 +184,10 @@ class ParkMapState extends State<ParkMap> {
               zoomControlsEnabled: false,
               myLocationButtonEnabled: false,
               initialCameraPosition: _initialCameraPosition,
-              onMapCreated: (_) =>
-                  _stream.listen(_updateMarkersByDocumentSnapshots),
+              onMapCreated: (controller) {
+                _googleMapController = controller;
+                _stream.listen(_updateMarkersByDocumentSnapshots);
+              },
               markers: _markers,
               circles: {
                 Circle(
@@ -189,25 +214,39 @@ class ParkMapState extends State<ParkMap> {
           SizedBox(
             height: displayHeight * _sliderHeightRatio,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 4,
+              ),
+              child: Row(
                 children: [
-                  Text('現在の検出半径: ${_radiusInKm}km'),
-                  const SizedBox(height: 8),
-                  Slider(
-                    value: _radiusInKm,
-                    min: 1,
-                    max: 10,
-                    divisions: 9,
-                    label: _radiusInKm.toStringAsFixed(1),
-                    onChanged: (value) => _geoQueryCondition.add(
-                      _GeoQueryCondition(
-                        radiusInKm: value,
-                        cameraPosition: _cameraPosition,
-                      ),
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('現在の検出半径: ${_radiusInKm}km'),
+                        const SizedBox(height: 8),
+                        Slider(
+                          value: _radiusInKm,
+                          min: 1,
+                          max: 10,
+                          divisions: 9,
+                          label: _radiusInKm.toStringAsFixed(1),
+                          onChanged: (value) => _geoQueryCondition.add(
+                            _GeoQueryCondition(
+                              radiusInKm: value,
+                              cameraPosition: _cameraPosition,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                  ),
+                  const SizedBox(width: 16),
+                  IconButton(
+                    onPressed: _maybeMoveToCurrentLocation,
+                    icon: const Icon(Icons.near_me),
                   ),
                 ],
               ),
