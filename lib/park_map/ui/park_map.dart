@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:js';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:geoflutterfire_plus/geoflutterfire_plus.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:js/js.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../firestore_refs.dart';
@@ -48,15 +48,18 @@ class ParkMapState extends State<ParkMap> {
 
   Future<void> getLocation() async {
     getCurrentPosition(
-      allowInterop((pos) {
+      allowInterop((position) {
         setState(() {
-          _initialTarget = LatLng(
-            // ignore: avoid_dynamic_calls
-            pos.coords.latitude as double,
-            // ignore: avoid_dynamic_calls
-            pos.coords.longitude as double,
-          );
-          _initialTarget ??= _tokyoStation;
+          if (position == null) {
+            _initialTarget = _tokyoStation;
+          } else {
+            _initialTarget = LatLng(
+              // ignore: avoid_dynamic_calls
+              position.coords.latitude as double,
+              // ignore: avoid_dynamic_calls
+              position.coords.longitude as double,
+            );
+          }
         });
       }),
     );
@@ -153,11 +156,11 @@ class ParkMapState extends State<ParkMap> {
   double get _pageViewHeightRatio => 1 - (_mapHeightRatio + _sliderHeightRatio);
 
   /// [GoogleMap] ウィジェット表示時の初期値。
-  LatLng? _initialTarget;
+  late final LatLng _initialTarget;
 
   /// [GoogleMap] ウィジェット表示時カメライチの初期値。
   late final _initialCameraPosition = CameraPosition(
-    target: _initialTarget!,
+    target: _initialTarget,
     zoom: _initialZoom,
   );
 
@@ -181,77 +184,75 @@ class ParkMapState extends State<ParkMap> {
     return Scaffold(
       body: _loading
           ? const CircularProgressIndicator()
-          : _initialTarget == null
-              ? const Text('位置情報の取得できませんでした。')
-              : Column(
-                  children: [
-                    SizedBox(
-                      height: displayHeight * _mapHeightRatio,
-                      child: GoogleMap(
-                        zoomControlsEnabled: false,
-                        myLocationButtonEnabled: false,
-                        initialCameraPosition: _initialCameraPosition,
-                        onMapCreated: (_) =>
-                            _stream.listen(_updateMarkersByDocumentSnapshots),
-                        markers: _markers,
-                        circles: {
-                          Circle(
-                            circleId: const CircleId('value'),
-                            center: LatLng(
-                              _cameraPosition.target.latitude,
-                              _cameraPosition.target.longitude,
-                            ),
-                            radius: _radiusInKm * 1000,
-                            fillColor: Colors.black12,
-                            strokeWidth: 0,
-                          ),
-                        },
-                        onCameraMove: (cameraPosition) {
-                          _geoQueryCondition.add(
-                            _GeoQueryCondition(
-                              radiusInKm: _radiusInKm,
-                              cameraPosition: cameraPosition,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      height: displayHeight * _sliderHeightRatio,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 4,
+          : Column(
+              children: [
+                SizedBox(
+                  height: displayHeight * _mapHeightRatio,
+                  child: GoogleMap(
+                    zoomControlsEnabled: false,
+                    myLocationButtonEnabled: false,
+                    initialCameraPosition: _initialCameraPosition,
+                    onMapCreated: (_) =>
+                        _stream.listen(_updateMarkersByDocumentSnapshots),
+                    markers: _markers,
+                    circles: {
+                      Circle(
+                        circleId: const CircleId('value'),
+                        center: LatLng(
+                          _cameraPosition.target.latitude,
+                          _cameraPosition.target.longitude,
                         ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('現在の検出半径: ${_radiusInKm}km'),
-                            const SizedBox(height: 8),
-                            Slider(
-                              value: _radiusInKm,
-                              min: 1,
-                              max: 10,
-                              divisions: 9,
-                              label: _radiusInKm.toStringAsFixed(1),
-                              onChanged: (value) => _geoQueryCondition.add(
-                                _GeoQueryCondition(
-                                  radiusInKm: value,
-                                  cameraPosition: _cameraPosition,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        radius: _radiusInKm * 1000,
+                        fillColor: Colors.black12,
+                        strokeWidth: 0,
                       ),
-                    ),
-                    SizedBox(
-                      height: displayHeight * _pageViewHeightRatio,
-                      child: _ParksPageView(_parks),
-                    ),
-                  ],
+                    },
+                    onCameraMove: (cameraPosition) {
+                      _geoQueryCondition.add(
+                        _GeoQueryCondition(
+                          radiusInKm: _radiusInKm,
+                          cameraPosition: cameraPosition,
+                        ),
+                      );
+                    },
+                  ),
                 ),
+                SizedBox(
+                  height: displayHeight * _sliderHeightRatio,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('現在の検出半径: ${_radiusInKm}km'),
+                        const SizedBox(height: 8),
+                        Slider(
+                          value: _radiusInKm,
+                          min: 1,
+                          max: 10,
+                          divisions: 9,
+                          label: _radiusInKm.toStringAsFixed(1),
+                          onChanged: (value) => _geoQueryCondition.add(
+                            _GeoQueryCondition(
+                              radiusInKm: value,
+                              cameraPosition: _cameraPosition,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: displayHeight * _pageViewHeightRatio,
+                  child: _ParksPageView(_parks),
+                ),
+              ],
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => FirebaseAuth.instance.signOut(),
         child: const Icon(Icons.exit_to_app),
@@ -277,21 +278,6 @@ class _ParksPageViewState extends State<_ParksPageView> {
 
   @override
   Widget build(BuildContext context) {
-    /// チェックインする。
-    Future<void> _checkIn(Park park) async {
-      final scaffoldMessengerState = ScaffoldMessenger.of(context);
-      await addCheckIn(
-        appUserId: FirebaseAuth.instance.currentUser!.uid,
-        parkId: park.parkId,
-      );
-      scaffoldMessengerState.showSnackBar(
-        SnackBar(
-          content: Text('「${park.name}」にチェックインしました。'),
-        ),
-      );
-      setState(() {});
-    }
-
     return PageView(
       controller: _pageController,
       physics: const ClampingScrollPhysics(),
@@ -328,6 +314,21 @@ class _ParksPageViewState extends State<_ParksPageView> {
           ),
       ],
     );
+  }
+
+  /// チェックインする。
+  Future<void> _checkIn(Park park) async {
+    final scaffoldMessengerState = ScaffoldMessenger.of(context);
+    await addCheckIn(
+      appUserId: FirebaseAuth.instance.currentUser!.uid,
+      parkId: park.parkId,
+    );
+    scaffoldMessengerState.showSnackBar(
+      SnackBar(
+        content: Text('「${park.name}」にチェックインしました。'),
+      ),
+    );
+    setState(() {});
   }
 }
 

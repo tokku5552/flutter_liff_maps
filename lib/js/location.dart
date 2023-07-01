@@ -9,7 +9,7 @@ import 'package:js/js.dart';
 
 // Retrieves the device's current location
 @JS('getCurrentPosition')
-external void getCurrentPosition(Null Function(dynamic pos) allowInterop);
+external void getCurrentPosition(Null Function(dynamic position) allowInterop);
 
 @JS()
 @anonymous
