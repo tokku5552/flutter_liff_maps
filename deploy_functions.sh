@@ -1,1 +1,1 @@
-firebase deploy --only functions
+firebase use default && firebase deploy --only functions
