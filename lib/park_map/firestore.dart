@@ -6,7 +6,10 @@ import 'check_in.dart';
 
 /// 指定した公園 ID に対応する [CheckIn] 一覧を取得する。
 Future<List<CheckIn>> fetchCheckInsOfPark(String parkId) async {
-  final qs = await checkInsRef.where('parkId', isEqualTo: parkId).get();
+  final qs = await checkInsRef
+      .where('parkId', isEqualTo: parkId)
+      .orderBy('checkInAt', descending: true)
+      .get();
   return qs.docs.map((qds) => qds.data()).toList();
 }
 
