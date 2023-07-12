@@ -37,15 +37,12 @@ DocumentReference<Park> parkRef({required String parkId}) =>
     parksRef.doc(parkId);
 
 /// [CheckIn]s コレクションの参照。
-final checkInsRef = _db.collection('checkIns').withConverter(
-  fromFirestore: (ds, _) {
-    return CheckIn.fromDocumentSnapshot(ds);
-  },
-  toFirestore: (obj, _) {
-    final json = obj.toJson();
-    return json;
-  },
-);
+final checkInsRef = _db.collection('checkIns').withConverter<CheckIn>(
+      fromFirestore: (ds, _) {
+        return CheckIn.fromDocumentSnapshot(ds);
+      },
+      toFirestore: (obj, _) => obj.toJson(),
+    );
 
 /// [CheckIn] ドキュメントの参照。
 DocumentReference<CheckIn> checkInRef({required String checkInId}) =>
