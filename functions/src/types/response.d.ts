@@ -3,7 +3,10 @@
  * 参考：https://developers.line.biz/ja/reference/line-login/
  */
 
-/** GET https://api.line.me/oauth2/v2.1/verify のレスポンス。 */
+/**
+ * GET https://api.line.me/oauth2/v2.1/verify のレスポンス。
+ * https://developers.line.biz/ja/reference/line-login/#verify-access-token
+ */
 interface LINEGetVerifyAPIResponse {
     scope: string
     client_id: string
@@ -11,6 +14,10 @@ interface LINEGetVerifyAPIResponse {
 }
 
 /** GET https://api.line.me/v2/profile のレスポンス。 */
+/**
+ * GET https://api.line.me/v2/profile のレスポンス。
+ * https://developers.line.biz/ja/reference/line-login/#get-user-profile
+ */
 interface LINEGetProfileResponse {
     userId: string
     displayName: string

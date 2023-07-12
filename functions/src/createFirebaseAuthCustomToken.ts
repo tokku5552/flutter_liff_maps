@@ -48,8 +48,6 @@ const callGetVerifyAPI = async (accessToken: string): Promise<void> => {
 
 /**
  * LINE のプロフィール情報を取得する。
- *
- * @async
  * @param {string} accessToken - LINE のアクセストークン。
  * @returns {Promise<{ lineUserId: string; name: string; imageUrl?: string }>} ユーザーの LINE ID、名前、画像URL（存在する場合）を含むオブジェクトを返す Promise.
  * @throws エラーが発生した場合、エラーメッセージが含まれる Error オブジェクトがスローされる。
