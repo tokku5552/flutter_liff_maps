@@ -57,3 +57,6 @@ test.http
 
 # cache files
 hosting.*.cache
+
+# .firebaserc
+.firebaserc
