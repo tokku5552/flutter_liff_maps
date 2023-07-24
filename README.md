@@ -1,4 +1,31 @@
-# flutter_liff_maps
+# Flutter LIFF MAPS
+
+このリポジトリは、2023年7月28日に開催される Flutter 大学と LINE DC のコラボ企画、「Flutter×Firebase×LINE で位置情報サービスハンズオン！【Flutter 大学コラボ】」のためのものです。
+
+[connpass](https://linedevelopercommunity.connpass.com/event/283738/)
+
+[Flutter 大学](https://flutteruniv.com/)
+
+[LINE Developers Community](https://linedevelopercommunity.connpass.com/)
+
+具体的な実装に関しては、``Firebase Hosting`` に加えて ``LINE ログイン`` と ``Firebase Authentication``、``Cloud Functions`` を組み合わせてシームレスに認証を実行したり、``Google Map API`` と [geoflutterfire_plus](https://pub.dev/packages/geoflutterfire_plus) を組み合わせて LIFF 上で地図を表示するなど、より実践的なものとなっています。実装の詳細に関しては、[こちら](https://zenn.dev/tokku5552/books/flutter-web-liff-maps)をご覧ください。
+
+## アプリイメージ
+
+TODO
+
+## アプリの機能
+
+- 自分の近くにある公園を探すことができる。
+- チェックインすることができる。
+- 公園ごとにチェックインした人が見える。
+- 友人がチェックインしたら通知が来る。
+
+## アーキテクチャ図
+
+![アーキテクチャ図](figures/architecture.drawio.png)
+
+## 環境
 
 ```bash
 fvm flutter --version
@@ -68,10 +95,3 @@ ngrok を起動したターミナルで表示されている `Forwarding` の `h
 - `web/index.sample.html` をコピーして `web/index.html` を作成し、`YOUR-API-KEY-HERE` の部分を実際の Google Maps API Key に差し替える。
 - `functions/keys/service_account_key.json` を作成し、Firebase プロジェクトのサービスアカウントキーを反映する。
 - `functions/.env.sample` をコピーして `functions/.env` を作成し、`YOUR-LINE-CHANNEL-ID-HERE` の部分を実際の Channel ID に差し替える。
-
-## Feature
-
-- 自分の近くにある公園を探すことができる。
-- チェックインすることができる。
-- 公園ごとにチェックインした人が見える。
-- 友人がチェックインしたら通知が来る。
