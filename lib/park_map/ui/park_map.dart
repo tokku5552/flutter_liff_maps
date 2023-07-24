@@ -79,6 +79,11 @@ class ParkMapState extends State<ParkMap> {
     ),
   );
 
+  /// 公園の取得結果の [StreamSubscription].
+  /// [GoogleMap] ウィジェットの `onMapCreated` で初期化され、[dispose] メソッド
+  /// でキャンセルされる。
+  StreamSubscription<List<DocumentSnapshot<Park>>>? _streamSubscription;
+
   /// 得られた公園の [DocumentSnapshot] から、[_markers] を更新する。
   void _updateMarkersByDocumentSnapshots(
     List<DocumentSnapshot<Park>> documentSnapshots,
@@ -165,13 +170,9 @@ class ParkMapState extends State<ParkMap> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void dispose() {
     _geoQueryCondition.close();
+    _streamSubscription?.cancel();
     super.dispose();
   }
 
@@ -191,7 +192,8 @@ class ParkMapState extends State<ParkMap> {
               initialCameraPosition: _initialCameraPosition,
               onMapCreated: (controller) {
                 _googleMapController = controller;
-                _stream.listen(_updateMarkersByDocumentSnapshots);
+                _streamSubscription =
+                    _stream.listen(_updateMarkersByDocumentSnapshots);
               },
               markers: _markers,
               circles: {
