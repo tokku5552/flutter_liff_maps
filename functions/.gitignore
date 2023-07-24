@@ -9,7 +9,7 @@ typings/
 node_modules/
 
 # Fireabse service account key
-keys/
+lib/keys/
 
 # Environment variables
 .env
