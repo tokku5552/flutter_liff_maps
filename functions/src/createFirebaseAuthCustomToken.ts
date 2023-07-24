@@ -12,8 +12,8 @@ import * as functions from 'firebase-functions/v2'
 export const createfirebaseauthcustomtoken = functions.https.onCall<{ accessToken: string }>(
     async (callableRequest) => {
         const accessToken = callableRequest.data.accessToken
-        await callGetVerifyAPI(accessToken)
-        const { lineUserId, name, imageUrl } = await callGetProfileAPI(accessToken)
+        await verifyAccessToken(accessToken)
+        const { lineUserId, name, imageUrl } = await getLINEProfile(accessToken)
         const customToken = await admin.auth().createCustomToken(lineUserId)
         await setAppUserDocument({ lineUserId, name, imageUrl })
         return { customToken }
@@ -26,7 +26,7 @@ export const createfirebaseauthcustomtoken = functions.https.onCall<{ accessToke
  * @throws {Error} API のレスポンスステータスが 200 でない場合、または LINE チャネル ID が正しくない場合、またはアクセストークンの有効期限が過ぎている場合にエラーをスローする。
  * @returns {Promise<void>} アクセストークンが有効であると確認された場合に解決する Promise.
  */
-const callGetVerifyAPI = async (accessToken: string): Promise<void> => {
+const verifyAccessToken = async (accessToken: string): Promise<void> => {
     const response = await axios.get<LINEGetVerifyAPIResponse>(
         `https://api.line.me/oauth2/v2.1/verify?access_token=${accessToken}`
     )
@@ -52,7 +52,7 @@ const callGetVerifyAPI = async (accessToken: string): Promise<void> => {
  * @returns {Promise<{ lineUserId: string; name: string; imageUrl?: string }>} ユーザーの LINE ID、名前、画像URL（存在する場合）を含むオブジェクトを返す Promise.
  * @throws エラーが発生した場合、エラーメッセージが含まれる Error オブジェクトがスローされる。
  */
-const callGetProfileAPI = async (
+const getLINEProfile = async (
     accessToken: string
 ): Promise<{ lineUserId: string; name: string; imageUrl?: string }> => {
     const response = await axios.get<LINEGetProfileResponse>(`https://api.line.me/v2/profile`, {

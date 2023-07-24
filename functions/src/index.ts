@@ -24,11 +24,11 @@ admin.initializeApp({
     databaseURL: `https://${serviceAccount.projectId}.firebaseio.com`
 })
 
-/** Firebase Functions のグローバル設定。 */
+// Firebase Functions のグローバル設定。
 functions.setGlobalOptions({ region: `asia-northeast1` })
 
-/** ここでデプロイする関数をまとめる。 */
+// ここでデプロイする関数をまとめる。
 import { createfirebaseauthcustomtoken } from './createFirebaseAuthCustomToken'
 
-/** index.ts で import してデプロイする関数一覧。 */
+// index.ts で import してデプロイする関数一覧。
 export { createfirebaseauthcustomtoken }
