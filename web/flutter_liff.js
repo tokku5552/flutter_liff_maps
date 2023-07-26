@@ -1,13 +1,30 @@
-async function init(config) {
-  console.log('init called')
+/**
+ * このファイルでは、LIFF の初期化処理およびアクセストークンの取得処理を提供する。
+ * Flutter Web の js/flutter_liff.dart から呼ばれる。
+ *
+ * @file
+ */
+
+/**
+ * LIFF の初期化を行う。
+ *
+ * @param {Object} config 設定オブジェクト
+ * @param {string} config.liffId LIFF ID
+ * @param {function} config.successCallback LIFF 初期化成功時のコールバック関数
+ * @param {function} config.errorCallback LIFF 初期化失敗時のコールバック関数
+ *
+ * @returns {Promise<void>} プロミス。初期化が完了すると解決する。
+ */
+async function initializeLiff(config) {
+  console.log('LIFF init called')
   await liff
     .init({
       liffId: config['liffId'],
-      withLoginOnEternalBrowser: true,
+      withLoginOnExternalBrowser: true,
     })
     .then(() => {
-      // LIFF アプリとして起動していないかつログインしていなければログインする。
-      if(!liff.isInClient() && !liff.isLoggedIn()){
+      // LIFF アプリとして起動していない、かつ未ログインであれば LINE にログインする。
+      if (!liff.isInClient() && !liff.isLoggedIn()) {
         liff.login()
       }
       config['successCallback']()
@@ -17,40 +34,12 @@ async function init(config) {
     })
 }
 
-function getLiffId() {
-  return liff.id
-}
-
 /**
- * @param {boolean} ignoreError エラーを無視して、空文字を返す。
- * LIFF アプリとしてではなく、単なる Flutter Web アプリとしてデバッグするような
- * 用途を想定し、ignoreError = true を指定すると、エラーを握りつぶして、空文字を返す。
+ * LINE のアクセストークンを取得する。
  *
- * @return {string} LIFF アプリとして起動している際に得られる userId を返す。
+ * @returns {Promise<string>} プロミス。アクセストークンが解決する。
+ * @throws {Error} LIFF が初期化されていない場合にエラーがスローされる。
  */
-async function getUserId(ignoreError = false) {
-  if (ignoreError) {
-    try {
-      console.log('getUserId called')
-      const profile = await liff.getProfile()
-      return profile['userId']
-    } catch (e) {
-      console.error('ユーザー ID が取得できませんでした。')
-      return ''
-    }
-  } else {
-    console.log('getUserId called')
-    const profile = await liff.getProfile()
-    return profile['userId']
-  }
-}
-
-async function getGroupId() {
-  console.log('getGroupId called')
-  const context = await liff.getContext()
-  return context['groupId']
-}
-
 async function getAccessToken() {
   console.log('getAccessToken called')
   return await liff.getAccessToken()

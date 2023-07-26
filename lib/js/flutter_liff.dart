@@ -3,21 +3,15 @@ library flutter_liff;
 
 import 'package:js/js.dart';
 
-@JS('init')
-external Object init(Config config);
+/// LIFF アプリを初期化する。
+@JS('initializeLiff')
+external Object initializeLiff(Config config);
 
-@JS('getUserId')
-external Object getUserId();
-
-@JS('getLiffId')
-external String getLiffId();
-
-@JS('getGroupId')
-external String getGroupId();
-
+/// LINE のアクセストークンを取得する。
 @JS('getAccessToken')
 external Object getAccessToken();
 
+/// LIFF アプリの初期化時に指定すべき設定値。
 @JS()
 @anonymous
 class Config {
