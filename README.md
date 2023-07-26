@@ -23,6 +23,10 @@ brew install fvm
 fvm install
 ```
 
+```bash
+fvm flutter pub get
+```
+
 VS Code を使っている場合は、`.vscode/settings.json` の設定により、FVM の Flutter に同梱されている Dart SDK が使用されるようになっている。VS Code 以外を使用している場合は所望の通りに対応する。
 
 ローカルホストの 8080 番ポートでデバッグ実行する。
@@ -49,14 +53,9 @@ ngrok でローカルホストの 8080 番ポートを一時公開（`fvm flutte
 ngrok http 8080
 ```
 
-ngrok を起動したターミナルで表示されている `Forwarding` の `https://<ランダム値>.ngrok.io` の URL を LINE Developers コンソールから、
+ngrok を起動したターミナルで表示されている `Forwarding` の `https://<ランダム値>.ngrok.io`（または `https://<ランダム値>.ngrok-free.app`）の URL を LINE Developers コンソールから、LIFF > LIFF アプリ詳細の Endpoint URL に指定する。
 
-- LINE Login の Callback URL（Use LINE Login in your web app を有効にする）
-- LIFF の Endpoint URL
-
-に指定する。
-
-上記の設定を済ませた上で、LINE アプリの適当なトーク画面に `https://liff.line.me/{YOUR-LIFF-ID}` の LIFF URL を貼り、タップすると、トーク画面上で LIFF アプリを起動することができる。
+上記の設定を済ませた上で、開発マシンで <http://localhost:8080>（Flutter Web のローカルホストの Web サーバ）にアクセスすると、LINE ログインが済んでいない場合は LINE ログインを促され、ngrok が払い出した URL にリダイレクトされる（ngrok の "You are about to visit..." のページが表示された場合は、自分の開発マシンの ngrok から払い出されたリンクであることを確認して "Visit Site" を押下して進む）。そうすると Flutter Web の画面が表示される。
 
 ローカルで Flutter アプリのソースコードを編集したら、`fvm flutter run -d web-server --web-port 8080` をしたターミナルで `R` キーを押下してホットリロードすると、再起動した LIFF アプリもその編集内容が反映されるようになるので、そのようにしてデバッグすると良い。
 
@@ -69,7 +68,7 @@ ngrok を起動したターミナルで表示されている `Forwarding` の `h
 - `functions/keys/service_account_key.json` を作成し、Firebase プロジェクトのサービスアカウントキーを反映する。
 - `functions/.env.sample` をコピーして `functions/.env` を作成し、`YOUR-LINE-CHANNEL-ID-HERE` の部分を実際の Channel ID に差し替える。
 
-## Feature
+## 主な機能一覧
 
 - 自分の近くにある公園を探すことができる。
 - チェックインすることができる。
