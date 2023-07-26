@@ -68,6 +68,16 @@ ngrok を起動したターミナルで表示されている `Forwarding` の `h
 - `functions/keys/service_account_key.json` を作成し、Firebase プロジェクトのサービスアカウントキーを反映する。
 - `functions/.env.sample` をコピーして `functions/.env` を作成し、`YOUR-LINE-CHANNEL-ID-HERE` の部分を実際の Channel ID に差し替える。
 
+### 複合インデックスの設定
+
+このアプリでは、指定した公園 ID に対応するチェックイン一覧を取得するために、複合インデックスを作成する必要がある。
+
+Flutter Web では、複合クエリのインデックスを自動で作成するための URLリンクがコンソールに表示されることはないので、手動で対応する必要がある。
+
+たとえば、下図を参考に手動で設定することができる。
+
+![Cloud Firestore composite index](./firestore_index.png)
+
 ## 主な機能一覧
 
 - 自分の近くにある公園を探すことができる。
