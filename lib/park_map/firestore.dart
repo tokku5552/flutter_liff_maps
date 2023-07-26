@@ -6,6 +6,9 @@ import 'check_in.dart';
 
 /// 指定した公園 ID に対応する [CheckIn] 一覧を取得する。
 Future<List<CheckIn>> fetchCheckInsOfPark(String parkId) async {
+  // NOTE: 複合インデックスの作成が必要であることに注意する。
+  // また、Flutter Web では、複合クエリのインデックスを自動で作成するための URL
+  // リンクがコンソールに表示されることはないので、手動で対応する必要がある。
   final qs = await checkInsRef
       .where('parkId', isEqualTo: parkId)
       .orderBy('checkInAt', descending: true)
@@ -19,7 +22,6 @@ Future<AppUser?> fetchAppUser(String appUserId) async {
   return ds.data();
 }
 
-// TODO: 書き込み用の CheckIn 型と CollectionReference を用いて型安全にする？
 /// [CheckIn] を作成する。
 Future<void> addCheckIn({
   required String appUserId,

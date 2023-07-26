@@ -26,19 +26,23 @@ Future<void> initializeLiff() async {
       throw Exception('LIFF ID が dart-define に設定されていません。');
     }
     await js_util.promiseToFuture<void>(
-      liff.init(
+      liff.initializeLiff(
         liff.Config(
           liffId: liffId,
           // JS に関数を渡すために allowInterop() でラップする。
-          successCallback: js_util.allowInterop(() => log('LIFF の初期化に成功しました。')),
+          successCallback:
+              js_util.allowInterop(() => consoleLog('LIFF の初期化に成功しました。')),
           errorCallback:
-              js_util.allowInterop((e) => log('LIFF の初期化に失敗しました。$e')),
+              js_util.allowInterop((e) => consoleError('LIFF の初期化に失敗しました。$e')),
         ),
       ),
     );
+    // 業務水準のアプリでは不適切だが、LIFF の初期化時に例外やエラーが発生した
+    // 場合には、エラーログを残しつつ、isLiffInitializationErrored,
+    // liffInitializationErrorを更新する。
     // ignore: avoid_catches_without_on_clauses
   } catch (e) {
-    log(e);
+    consoleError(e);
     isLiffInitializationErrored = true;
     liffInitializationError = e;
   }

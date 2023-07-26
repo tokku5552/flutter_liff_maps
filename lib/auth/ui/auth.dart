@@ -6,8 +6,8 @@ import 'package:js/js_util.dart' as js_util;
 import '../../js/flutter_liff.dart' as liff;
 
 /// [FirebaseAuth] の認証状態を監視して表示内容をコントロールする。
-/// 未認証の場合は [Stack] ウィジェットでログインボタンを重ねることで、[child] で
-/// 与えられたウィジェットを表示できないようにしている。
+/// 未ログインの場合は [_SingedOutGuard] ウィジェットを表示する。
+/// ログイン済みの場合のみ [child] で与えられたウィジェットが表示される。
 /// [MaterialApp] の builder メソッド内部で使用することで、その [BuildContext] を
 /// 継ぐすべてのウィジェットに適用される。
 class AuthGuard extends StatelessWidget {
@@ -17,23 +17,18 @@ class AuthGuard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        child,
-        StreamBuilder<User?>(
-          stream: FirebaseAuth.instance.userChanges(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const _OverlayLoading();
-            }
-            final user = snapshot.data;
-            if (user == null) {
-              return const _SingedOutGuard();
-            }
-            return const SizedBox();
-          },
-        ),
-      ],
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.userChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const _OverlayLoading();
+        }
+        final user = snapshot.data;
+        if (user == null) {
+          return const _SingedOutGuard();
+        }
+        return child;
+      },
     );
   }
 }
@@ -114,6 +109,11 @@ class _SignInButtonState extends State<_SignInButton> {
       );
       final customToken = response.data['customToken'] as String;
       await FirebaseAuth.instance.signInWithCustomToken(customToken);
+      // NOTE: [開発・実装時のヒント]
+      // 上記の Firebase Function の開発が済むまでは、上記の try 句の中の
+      // 記述をすべてコメントアウトして、下記の匿名サインインを有効にするのも
+      // Flutter Web の動作確認をするには有効である。
+      // await FirebaseAuth.instance.signInAnonymously();
       scaffoldMessengerState
           .showSnackBar(const SnackBar(content: Text('サインインしました。')));
     }
