@@ -59,6 +59,20 @@ ngrok を起動したターミナルで表示されている `Forwarding` の `h
 
 ローカルで Flutter アプリのソースコードを編集したら、`fvm flutter run -d web-server --web-port 8080` をしたターミナルで `R` キーを押下してホットリロードすると、再起動した LIFF アプリもその編集内容が反映されるようになるので、そのようにしてデバッグすると良い。
 
+## Firebase プロジェクトの設定
+
+プロジェクトルートで下記のコマンドを実行し、Flutter Web アプリを Firebase プロジェクトと接続するための設定ファイルを生成する。
+
+```sh
+flutterfire configure
+```
+
+コンソール上でどの Firebase プロジェクトと接続するかを選択し、プラットフォームには Web を指定する。
+
+すると、`lib/firebase_options.dart` というファイルが生成される。そのファイルの中には接続する Firebase プロジェクトの向き先の設定が記述されている。
+
+なお、本サンプルリポジトリではすでにサンプル用の Firebase プロジェクトに紐づいた `firebase_options.dart` ファイルが存在している。自身のプロジェクトに接続したい場合は上書きするか、一度 `firebase_options.dart` ファイルを削除してから `flutterfire configure` コマンドを実行する。
+
 ### 環境変数や API キーなどの設定
 
 現在のところでは、Flutter および Firebase Functions の開発・ビルドを行う上で下記の設定が必要となっている。
