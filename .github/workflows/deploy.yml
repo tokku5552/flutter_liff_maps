@@ -34,40 +34,4 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
           channelId: live
           projectId: flutter-liff-maps
-  deploy_funcsions:
-    runs-on: ubuntu-latest
-    env:
-      LINE_CHANNEL_ID: ${{ secrets.LINE_CHANNEL_ID }}
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: npm
-          cache-dependency-path: functions/package-lock.json
-      - name: Cache node modules
-        id: cache
-        uses: actions/cache@v3
-        with:
-          path: '**/node_modules'
-          key: cache-node-modules-${{ hashFiles('functions/package-lock.json') }}
-      - name: make functions/key dir
-        run: |
-          mkdir -p functions/keys
-      - name: create-json
-        id: create-json
-        uses: jsdaniell/create-json@v1.2.2
-        with:
-          name: "service_account_key.json"
-          json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          dir: "functions/keys/"
-      - name: npm install
-        working-directory: functions
-        run: |
-          npm install
-      - name: Deploy to Firebase
-        uses: w9jds/firebase-action@master
-        with:
-          args: deploy --only functions
-        env:
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+  
